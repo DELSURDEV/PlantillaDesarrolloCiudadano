@@ -1,0 +1,106 @@
+# Configuración controlada por la plantilla. NO MODIFICAR.
+# Está protegida por herramientas/verificar_plantilla.py.
+
+[server]
+headless = true
+address = "localhost"
+port = 8501
+runOnSave = false
+enableCORS = true
+enableXsrfProtection = true
+# Solo sirve static/ (fuentes). Todo lo que esté ahí es público y sin inicio de sesión.
+enableStaticServing = true
+maxUploadSize = 10
+maxMessageSize = 50
+
+[browser]
+serverAddress = "localhost"
+serverPort = 8501
+gatherUsageStats = false
+
+[client]
+showErrorDetails = "none"
+showErrorLinks = false
+toolbarMode = "viewer"
+
+[runner]
+magicEnabled = false
+
+[logger]
+level = "info"
+
+# Sistema de diseño DELSUR (Manual de Marca 2019). Tokens en MARCA.md.
+[theme]
+base = "light"
+primaryColor = "#0058A2"
+backgroundColor = "#F6F6F6"
+secondaryBackgroundColor = "#EDEDED"
+textColor = "#2C2E35"
+linkColor = "#0058A2"
+borderColor = "#DADADA"
+dataframeBorderColor = "#DADADA"
+dataframeHeaderBackgroundColor = "#EEF3FA"
+showWidgetBorder = true
+baseRadius = "8px"
+buttonRadius = "4px"
+font = "SourceSans3, Arial, sans-serif"
+headingFont = "Montserrat, Arial, sans-serif"
+headingFontWeights = [800, 800, 700, 700, 600, 600]
+headingFontSizes = ["2.75rem", "2rem", "1.5rem", "1.125rem", "1rem", "0.875rem"]
+baseFontSize = 16
+greenColor = "#007934"
+greenBackgroundColor = "#E3F2E8"
+greenTextColor = "#007934"
+orangeColor = "#B7791F"
+orangeBackgroundColor = "#FBF1DE"
+orangeTextColor = "#8A5A12"
+yellowColor = "#B7791F"
+yellowBackgroundColor = "#FBF1DE"
+yellowTextColor = "#8A5A12"
+redColor = "#B42318"
+redBackgroundColor = "#FBE7E5"
+redTextColor = "#B42318"
+blueColor = "#009FE3"
+blueBackgroundColor = "#D6EFFB"
+blueTextColor = "#0079AD"
+grayColor = "#706F6F"
+chartCategoricalColors = ["#0058A2", "#009FE3", "#9DC431", "#706F6F", "#1D2F4C", "#6F9FCF", "#007934", "#BDBCBC"]
+chartSequentialColors = ["#EEF3FA", "#DCE6F4", "#B6CDE6", "#93B6DA", "#6F9FCF", "#3F7FBE", "#0058A2", "#004F91", "#00467F", "#0B2E57"]
+
+[theme.sidebar]
+backgroundColor = "#0B2E57"
+secondaryBackgroundColor = "#00467F"
+textColor = "#FFFFFF"
+primaryColor = "#009FE3"
+borderColor = "#00467F"
+linkColor = "#FFFFFF"
+
+[[theme.fontFaces]]
+family = "Montserrat"
+url = "app/static/fuentes/montserrat-latin-600-normal.woff2"
+weight = 600
+
+[[theme.fontFaces]]
+family = "Montserrat"
+url = "app/static/fuentes/montserrat-latin-700-normal.woff2"
+weight = 700
+
+[[theme.fontFaces]]
+family = "Montserrat"
+url = "app/static/fuentes/montserrat-latin-800-normal.woff2"
+weight = 800
+
+[[theme.fontFaces]]
+family = "SourceSans3"
+url = "app/static/fuentes/source-sans-3-latin-400-normal.woff2"
+weight = 400
+
+[[theme.fontFaces]]
+family = "SourceSans3"
+url = "app/static/fuentes/source-sans-3-latin-600-normal.woff2"
+weight = 600
+
+[[theme.fontFaces]]
+family = "SourceSans3"
+url = "app/static/fuentes/source-sans-3-latin-700-normal.woff2"
+weight = 700

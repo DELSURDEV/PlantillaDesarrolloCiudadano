@@ -1,0 +1,388 @@
+/* Sistema de diseño DELSUR aplicado a Streamlit. NO MODIFICAR (zona protegida).
+   Solo se estilizan contenedores creados por interfaz/ (clases st-key-delsur-*). */
+
+/* ---------- Estructura general ---------- */
+[data-testid="stHeader"] {
+  background: transparent;
+  border-top: 3px solid #009FE3;
+  pointer-events: none; /* deja hacer clic en la barra superior; sus botones siguen activos */
+}
+[data-testid="stHeader"] * { pointer-events: none; }
+[data-testid="stHeader"] button,
+[data-testid="stHeader"] button *,
+[data-testid="stHeader"] a,
+[data-testid="stHeader"] [role="button"] { pointer-events: auto; }
+[data-testid="stMainBlockContainer"] {
+  padding: 0 2.5rem 1.5rem;
+  max-width: none;
+}
+[data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlock"] {
+  min-height: calc(100vh - 1.5rem);
+}
+
+/* ---------- Barra superior con ruta (breadcrumb) ---------- */
+/* El contenedor externo es el que se fija al hacer scroll y ocupa todo el ancho. */
+[data-testid="stLayoutWrapper"]:has(> .st-key-delsur-barra) {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: calc(100% + 5rem) !important;
+  max-width: none !important;
+  margin: 0 -2.5rem 0.5rem;
+}
+.st-key-delsur-barra {
+  min-height: 3.75rem;
+  padding: 0 4rem 0 2.5rem;
+  background: #FFFFFF;
+  border-bottom: 1px solid #DADADA;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+}
+.st-key-delsur-migas { flex: 1 1 auto; gap: 0.5rem !important; align-items: center !important; }
+.st-key-delsur-migas > div { width: auto !important; flex: 0 0 auto !important; margin: 0 !important; }
+.st-key-delsur-migas [data-testid="stCaptionContainer"] p,
+.st-key-delsur-migas [data-testid="stCaptionContainer"] { margin: 0 !important; padding: 0 !important; font-size: 15px; color: #9B9C9F; line-height: 1.6; }
+.st-key-delsur-migas a[data-testid="stPageLink-NavLink"] {
+  padding: 0 0.15rem;
+  margin: 0;
+  border-radius: 4px;
+  background: transparent !important;
+  line-height: 1.6;
+}
+.st-key-delsur-migas a[data-testid="stPageLink-NavLink"] [data-testid="stIconMaterial"],
+.st-key-delsur-migas a[data-testid="stPageLink-NavLink"] > span:first-child:not(:only-child) { display: none; }
+.st-key-delsur-migas [data-testid="stPageLink"] { margin: 0; }
+.st-key-delsur-migas a[data-testid="stPageLink-NavLink"] p { font-size: 15px; color: #4D4C4C; }
+.st-key-delsur-migas a[data-testid="stPageLink-NavLink"]:hover p { color: #0058A2; text-decoration: underline; }
+.st-key-delsur-migas > div:first-child a[data-testid="stPageLink-NavLink"] p {
+  font-family: "Montserrat", Arial, sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  color: #2C2E35;
+}
+.st-key-delsur-migas-actual [data-testid="stCaptionContainer"] p { color: #0058A2 !important; font-weight: 600; }
+.delsur-estado { display: flex; gap: 0.5rem; font-family: "SourceSans3", Arial, sans-serif; }
+.pastilla {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.7rem;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid;
+  white-space: nowrap;
+}
+.pastilla.exito { color: #007934; background: #E3F2E8; border-color: #B5DCC2; }
+.pastilla.exito i { width: 8px; height: 8px; border-radius: 50%; background: #007934; }
+.pastilla.aviso { color: #8A5A12; background: #FBF1DE; border-color: #EBCF9C; }
+
+/* ---------- Barra lateral ---------- */
+[data-testid="stSidebar"] { min-width: 264px !important; max-width: 264px !important; }
+[data-testid="stSidebarHeader"] { padding: 0.75rem 1rem 0; height: auto; }
+[data-testid="stSidebarContent"] { padding: 0 !important; }
+[data-testid="stSidebarUserContent"] { padding: 0 0.75rem !important; }
+/* El menú ocupa el alto disponible para que el usuario quede al fondo. */
+[data-testid="stSidebarUserContent"] > div > [data-testid="stVerticalBlock"] {
+  min-height: calc(100vh - 3.5rem);
+  gap: 0;
+}
+.st-key-delsur-logo {
+  align-items: center;
+  padding: 0.25rem 0 1.25rem;
+  margin: 0 -0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+.st-key-delsur-menu { gap: 0.15rem !important; padding: 0.75rem 0 1rem; }
+.st-key-delsur-menu > [data-testid="stElementContainer"] { margin: 0 !important; }
+.st-key-delsur-menu [data-testid="stCaptionContainer"] { padding: 1.1rem 0 0.4rem 0.75rem; margin: 0 !important; }
+.st-key-delsur-menu [data-testid="stCaptionContainer"] p {
+  color: #6F9FCF;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  margin: 0;
+}
+.st-key-delsur-menu a[data-testid="stPageLink-NavLink"] {
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+  gap: 0.75rem;
+}
+.st-key-delsur-menu a[data-testid="stPageLink-NavLink"] p {
+  color: #EEF3FA;
+  font-weight: 600;
+  font-size: 15px;
+}
+.st-key-delsur-menu a[data-testid="stPageLink-NavLink"] span { color: #93B6DA; }
+.st-key-delsur-menu a[data-testid="stPageLink-NavLink"]:hover { background: rgba(255, 255, 255, 0.07); }
+.st-key-delsur-menu a[data-testid="stPageLink-NavLink"][aria-current="page"],
+.st-key-delsur-menu a[data-testid="stPageLink-NavLink"].active { background: #0058A2; }
+.st-key-delsur-menu a[data-testid="stPageLink-NavLink"][aria-current="page"] p,
+.st-key-delsur-menu a[data-testid="stPageLink-NavLink"][aria-current="page"] span { color: #FFFFFF; }
+
+[data-testid="stLayoutWrapper"]:has(> .st-key-delsur-usuario),
+.st-key-delsur-usuario { margin-top: auto; }
+.st-key-delsur-usuario {
+  position: sticky;
+  bottom: 0;
+  padding: 0.9rem 0.25rem 1rem;
+  margin-left: -0.75rem;
+  margin-right: -0.75rem;
+  padding-left: 1rem;
+  padding-right: 0.75rem;
+  background: #0B2E57;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  flex-wrap: nowrap;
+  justify-content: space-between;
+}
+.st-key-delsur-usuario > div:first-child { flex: 1 1 auto !important; min-width: 0; width: auto !important; max-width: none !important; }
+.st-key-delsur-usuario > div:last-child { flex: 0 0 auto !important; width: auto !important; }
+.delsur-usuario { display: flex; align-items: center; gap: 0.75rem; font-family: "SourceSans3", Arial, sans-serif; }
+.delsur-usuario .avatar {
+  display: inline-flex; align-items: center; justify-content: center;
+  flex: 0 0 40px; width: 40px; height: 40px; border-radius: 8px;
+  background: #00467F; color: #FFFFFF;
+  font-family: "Montserrat", Arial, sans-serif; font-weight: 800; font-size: 14px;
+}
+.delsur-usuario .datos { display: flex; flex-direction: column; line-height: 1.25; min-width: 0; }
+.delsur-usuario strong { color: #FFFFFF; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.delsur-usuario small { color: #93B6DA; font-size: 13px; }
+.st-key-delsur-usuario button {
+  border: none;
+  background: transparent;
+  color: #93B6DA;
+  min-height: 2.25rem;
+  padding: 0 0.5rem;
+}
+.st-key-delsur-usuario button:hover { background: rgba(255, 255, 255, 0.08); color: #FFFFFF; }
+
+/* ---------- Pantalla de acceso ---------- */
+.stApp:has(.st-key-delsur-acceso) { background: #0B2E57; }
+.stApp:has(.st-key-delsur-acceso) [data-testid="stHeader"] { border-top: none; }
+.st-key-delsur-acceso {
+  max-width: 1040px;
+  margin: 14vh auto 0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.30);
+}
+.st-key-delsur-acceso [data-testid="stHorizontalBlock"] { gap: 0 !important; align-items: stretch; }
+.st-key-delsur-acceso [data-testid="stColumn"] { display: flex; flex-direction: column; }
+.st-key-delsur-acceso [data-testid="stColumn"]:last-child { background: #FFFFFF; }
+.st-key-delsur-acceso [data-testid="stColumn"] > div,
+.st-key-delsur-acceso [data-testid="stColumn"] [data-testid="stLayoutWrapper"] { flex: 1 1 auto; display: flex; flex-direction: column; }
+.st-key-delsur-acceso-marca {
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+  min-height: 420px;
+  padding: 3.5rem 3.5rem 3rem;
+  background: #0058A2;
+  justify-content: flex-end;
+}
+.st-key-delsur-acceso-marca::before {
+  content: "";
+  position: absolute;
+  right: -40px;
+  bottom: 0;
+  width: 70%;
+  height: 100%;
+  background: url("app/static/marca/supergrafico-sol.svg") no-repeat left bottom / auto 115%;
+  transform: scaleX(-1);
+  opacity: 0.16;
+  pointer-events: none;
+}
+.st-key-delsur-acceso-marca > * { position: relative; z-index: 1; }
+.st-key-delsur-acceso-marca [data-testid="stImage"] { margin-bottom: auto; }
+.st-key-delsur-acceso-marca [data-testid="stCaptionContainer"] p {
+  color: #6FCBF2;
+  font-weight: 700;
+  font-size: 12.5px;
+  letter-spacing: 0.16em;
+  margin-top: 2.5rem;
+}
+.st-key-delsur-acceso-marca h1 { color: #FFFFFF !important; font-size: 3rem; line-height: 1.1; padding: 0.25rem 0 0.5rem; }
+.st-key-delsur-acceso-marca p { color: #DCE6F4; font-size: 17px; }
+.st-key-delsur-acceso-nota [data-testid="stCaptionContainer"] p {
+  color: #93B6DA !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  margin-top: 0 !important;
+}
+.st-key-delsur-acceso-formulario {
+  height: 100%;
+  justify-content: center;
+  padding: 3.5rem 3.5rem;
+  background: #FFFFFF;
+}
+.st-key-delsur-acceso-formulario [data-testid="stCaptionContainer"] p { color: #0058A2; font-weight: 600; font-size: 15px; }
+.st-key-delsur-acceso-formulario h2 { color: #0B2E57; font-size: 2rem; padding: 0 0 0.25rem; }
+.st-key-delsur-acceso-formulario [data-testid="stMarkdownContainer"] p { color: #706F6F; }
+.st-key-delsur-acceso-formulario button p { color: #FFFFFF !important; }
+.st-key-delsur-acceso-formulario button { min-height: 3rem; font-weight: 600; margin-top: 0.75rem; }
+
+/* ---------- Encabezado tipo panel con supergráfico ---------- */
+h1 { color: #0058A2; }
+[class*="st-key-delsur-encabezado"] {
+  position: relative;
+  overflow: hidden;
+  padding: 2rem 2.25rem 1.75rem;
+  background: #EEF3FA;
+  border: 1px solid #DCE6F4;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+}
+/* Supergráfico: rayos del sol desde la esquina inferior derecha (reflejado). */
+[class*="st-key-delsur-encabezado"]::before {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 380px;
+  height: 100%;
+  background: url("app/static/marca/supergrafico-sol.svg") no-repeat left bottom / auto 125%;
+  transform: scaleX(-1);
+  opacity: 0.16;
+  pointer-events: none;
+}
+[class*="st-key-delsur-encabezado"] > * { position: relative; z-index: 1; }
+[class*="st-key-delsur-encabezado"] h1 {
+  color: #0B2E57;
+  font-size: 2.5rem;
+  padding: 0.25rem 0 0;
+}
+[class*="st-key-delsur-antetitulo"] p {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  font-size: 12px;
+  color: #0058A2;
+}
+[class*="st-key-delsur-descripcion"] p { color: #4D4C4C; font-size: 17px; max-width: 46rem; }
+
+/* ---------- Títulos de sección ---------- */
+[class*="st-key-delsur-seccion"] h3 {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #0058A2;
+}
+
+/* ---------- Tarjetas e indicadores ---------- */
+[class*="st-key-delsur-tarjeta"],
+[class*="st-key-delsur-kpi-"] {
+  background: #FFFFFF;
+  box-shadow: 0 1px 2px rgba(28, 46, 76, 0.08);
+}
+[class*="st-key-delsur-tarjeta-azul"] { border-top: 4px solid #0058A2 !important; }
+[class*="st-key-delsur-tarjeta-cyan"] { border-top: 4px solid #009FE3 !important; }
+[class*="st-key-delsur-tarjeta-lima"] { border-top: 4px solid #9DC431 !important; }
+
+[class*="st-key-delsur-kpi-"] { position: relative; }
+[class*="st-key-delsur-kpi-"] [data-testid="stMetricLabel"] p {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 12px;
+  font-weight: 700;
+  color: #4D4C4C;
+}
+[class*="st-key-delsur-kpi-"] [data-testid="stMetricValue"] {
+  font-family: "Montserrat", Arial, sans-serif;
+  font-weight: 800;
+  color: #0B2E57;
+}
+[data-testid="stLayoutWrapper"]:has(> [class*="st-key-delsur-kpi-icono"]),
+[class*="st-key-delsur-kpi-icono"] {
+  position: absolute !important;
+  top: 1rem;
+  right: 1rem;
+  width: auto !important;
+  z-index: 2;
+}
+[class*="st-key-delsur-kpi-icono"] p {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  font-size: 20px;
+  margin: 0;
+}
+[class*="st-key-delsur-kpi-azul"] [class*="st-key-delsur-kpi-icono"] p { background: #DCE6F4; color: #0058A2; }
+[class*="st-key-delsur-kpi-cyan"] [class*="st-key-delsur-kpi-icono"] p { background: #D6EFFB; color: #0079AD; }
+[class*="st-key-delsur-kpi-lima"] [class*="st-key-delsur-kpi-icono"] p { background: #E3F2E8; color: #007934; }
+
+/* ---------- Foco visible ---------- */
+button:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 159, 227, 0.35) !important;
+}
+
+/* ---------- Pie de página (siempre al fondo) ---------- */
+.st-key-delsur-pie,
+[data-testid="stLayoutWrapper"]:has(> .st-key-delsur-pie) { margin-top: auto; }
+.st-key-delsur-pie { padding-top: 3rem; }
+.delsur-footer {
+  background: #0B2E57;
+  color: #DCE6F4;
+  border-radius: 8px;
+  overflow: hidden;
+  font-family: "SourceSans3", Arial, sans-serif;
+}
+.delsur-footer .banda { display: flex; flex-direction: column; }
+.delsur-footer .banda i { display: block; }
+.delsur-footer .banda .lima { height: 3px; background: #9DC431; }
+.delsur-footer .banda .cyan { height: 4px; background: #009FE3; }
+.delsur-footer .banda .azul { height: 4px; background: #0058A2; }
+.delsur-footer .columnas {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+  align-items: start;
+  padding: 2rem 2.5rem 1.5rem;
+}
+.delsur-footer .marca { display: flex; align-items: center; gap: 1.5rem; }
+.delsur-footer img { width: 130px; display: block; }
+.delsur-footer .app { font-family: "Montserrat", Arial, sans-serif; font-weight: 700; color: #FFFFFF; margin: 0 0 0.25rem; }
+.delsur-footer p { margin: 0; font-size: 14px; color: #93B6DA; }
+.delsur-footer h4 {
+  margin: 0 0 0.75rem;
+  padding: 0;
+  font-family: "SourceSans3", Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6F9FCF;
+}
+.delsur-footer ul { list-style: none; margin: 0; padding: 0; }
+.delsur-footer li { margin: 0 0 0.45rem; font-size: 14px; color: #DCE6F4; }
+.delsur-footer a { color: #FFFFFF; text-decoration: none; }
+.delsur-footer a:hover { text-decoration: underline; }
+.delsur-footer .legal {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 1rem 2.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 12px;
+  color: #93B6DA;
+}
+
+/* ---------- Pantallas pequeñas ---------- */
+@media (max-width: 760px) {
+  [data-testid="stMainBlockContainer"] { padding: 0 1rem 1rem; }
+  [data-testid="stLayoutWrapper"]:has(> .st-key-delsur-barra) { width: calc(100% + 2rem) !important; margin: 0 -1rem 0.5rem; }
+  .st-key-delsur-barra { padding: 0 3rem 0 3.5rem; }
+  .st-key-delsur-migas > div:not(:has(.st-key-delsur-migas-actual)):not(.st-key-delsur-migas-actual) { display: none !important; }
+  .delsur-estado .pastilla.aviso { display: none; }
+  .st-key-delsur-acceso { margin-top: 2rem; }
+  .st-key-delsur-acceso-marca, .st-key-delsur-acceso-formulario { padding: 2rem; min-height: 0; }
+  .delsur-footer .marca { flex-direction: column; align-items: flex-start; }
+  [class*="st-key-delsur-encabezado"]::before { width: 55%; opacity: 0.10; }
+  .delsur-footer .columnas { grid-template-columns: 1fr; padding: 1.5rem; }
+  .delsur-footer .legal { padding: 1rem 1.5rem; }
+  [class*="st-key-delsur-encabezado"] { padding: 1.5rem; }
+}
