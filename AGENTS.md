@@ -4,6 +4,22 @@ Versión de la plantilla: ver `VERSION`. Estado: **pendiente de revisión y apro
 
 Este proyecto ya trae construidos el inicio de sesión con Microsoft Entra ID, los controles de seguridad y el marco visual de DELSUR. Tu trabajo, Codex, es construir lo que pide el usuario **dentro de esta base**, siguiendo la estructura de este archivo, sin debilitar la seguridad y cumpliendo los estándares.
 
+## Guía rápida para el usuario
+
+Codex: si el usuario pregunta cómo empezar, cómo abrir la aplicación o cómo retomar, muéstrale esta sección tal cual.
+
+| Quiero… | Qué hacer |
+|---|---|
+| Empezar a trabajar o retomar | Abrir Codex **en la carpeta del proyecto** y escribir: *"Lee AGENTS.md y CONTEXTO_PROYECTO.md, dime dónde quedamos y continúa."* |
+| Ver la aplicación | Escribir a Codex: *"Abre la aplicación."* Se abre en `http://localhost:8501` y pide iniciar sesión con Microsoft. |
+| Ver un cambio que hizo Codex | Recargar la página del navegador (F5). |
+| Detener la aplicación | Cerrar la ventana negra de la aplicación. |
+| Terminar la sesión de trabajo | Escribir a Codex: *"Guarda el avance, voy a cerrar."* |
+| Crear otro proyecto o no tengo la plantilla | En la carpeta de proyectos, descargar el AGENTS de arranque y pedir a Codex *"Quiero crear una aplicación nueva."*: `Invoke-WebRequest "https://raw.githubusercontent.com/DELSURDEV/PlantillaDesarrolloCiudadano/v0.5.2/herramientas/AGENTS_ARRANQUE.md" -OutFile ".\AGENTS.md" -UseBasicParsing` |
+
+- El chat **no se guarda** entre sesiones. Todo el avance queda en `CONTEXTO_PROYECTO.md`, y Codex lo actualiza después de cada tarea.
+- Los datos de Microsoft Entra ID van en `.streamlit\secrets.toml` (se abre con el Bloc de notas). **Nunca** se pegan en el chat.
+
 ## 1. Reglas generales
 
 - Responde en español claro. El usuario no es técnico: explica qué hiciste y qué debe probar, sin jerga.
@@ -208,6 +224,12 @@ Cada sesión empieza en un chat nuevo. La memoria del proyecto es `CONTEXTO_PROY
 
 **Durante el trabajo:** actualiza el contexto después de cada tarea, decisión, prueba o bloqueo (el RDP puede cerrarse en cualquier momento). Antes de una tarea larga, anota en "Trabajo en curso" qué vas a hacer. Registra resultados reales de pruebas; lo no ejecutado se marca "no probado". Resumen operativo, no copia del chat. Nunca guardes secretos ni datos personales. Relee el archivo después de escribirlo.
 
+**Confirmación visible:** cada respuesta en la que cambiaste archivos, tomaste una decisión o corriste pruebas termina con una línea `Contexto actualizado: <qué anotaste>`. Si no pudiste actualizarlo, dilo claramente.
+
+**Cierre:** si el usuario dice que se va, que cierra la sesión o escribe *"Guarda el avance"*, actualiza de inmediato el "Resumen vigente", el "Punto de interrupción", la "Próxima acción" y el "Historial breve", y confirma con la instrucción para retomar.
+
+**Historial:** cada solicitud del usuario que cambie el proyecto se registra en "Historial breve" con fecha, tipo (solicitud, decisión, avance, prueba, bloqueo) y una línea de resumen.
+
 **Tamaño:** "Resumen vigente" en unas 10 líneas. Si el historial crece, mueve lo antiguo a `docs/historial/`.
 
 ## 10. Antes de dar por terminada una tarea
@@ -226,5 +248,7 @@ Cada sesión empieza en un chat nuevo. La memoria del proyecto es `CONTEXTO_PROY
 powershell -ExecutionPolicy Bypass -File .\herramientas\preparar_proyecto.ps1   # preparar o reparar el entorno
 .\.venv\Scripts\python.exe -m pytest                                              # pruebas
 .\.venv\Scripts\python.exe herramientas\verificar_plantilla.py                    # integridad
-.\.venv\Scripts\streamlit.exe run app.py                                          # abre http://localhost:8501
+Start-Process -FilePath .\.venv\Scripts\streamlit.exe -ArgumentList "run", "app.py"   # abre la aplicación (ventana aparte)
 ```
+
+Para abrir la aplicación usa siempre el `Start-Process` anterior: se abre en una ventana aparte y tu sesión no queda bloqueada. No ejecutes `streamlit run` directamente en tu terminal. Si el puerto 8501 ya está en uso, la aplicación ya está abierta: pide al usuario recargar el navegador.

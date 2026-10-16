@@ -43,7 +43,7 @@ $contexto = Join-Path $raiz "CONTEXTO_PROYECTO.md"
 $texto = [IO.File]::ReadAllText($contexto, $utf8)
 if ($texto.Contains("{{NOMBRE_PROYECTO}}")) {
     Paso "Preparando CONTEXTO_PROYECTO.md"
-    $texto = $texto.Replace("{{NOMBRE_PROYECTO}}", $nombre).Replace("{{VERSION_PLANTILLA}}", $version).Replace("{{FECHA}}", (Get-Date -Format "yyyy-MM-dd"))
+    $texto = $texto.Replace("{{RUTA_PROYECTO}}", $raiz).Replace("{{NOMBRE_PROYECTO}}", $nombre).Replace("{{VERSION_PLANTILLA}}", $version).Replace("{{FECHA}}", (Get-Date -Format "yyyy-MM-dd"))
     [IO.File]::WriteAllText($contexto, $texto, $utf8)
 }
 
@@ -108,4 +108,4 @@ Write-Host "Proyecto '$nombre' listo (plantilla $version, sin relación con su r
 Write-Host "Siguientes pasos:"
 Write-Host "  1. Complete en .streamlit\secrets.toml: client_id, client_secret y TENANT_ID (datos de IT)."
 Write-Host "     No pegue esos valores en el chat."
-Write-Host "  2. Para abrir la aplicación: .\.venv\Scripts\streamlit.exe run app.py"
+Write-Host "  2. Para ver la aplicación, pida a Codex: Abre la aplicación."

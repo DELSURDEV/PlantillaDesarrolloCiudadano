@@ -8,7 +8,7 @@ Los usuarios **no trabajan sobre este repositorio**: Codex descarga una versión
 ## Requisitos en el equipo (RDP)
 
 - Windows con **Python 3.10 o superior** (probado con 3.10.0) y acceso a PyPI (directo o por proxy).
-- Git (opcional; sin Git se usa el ZIP de la versión).
+- Acceso a github.com (la plantilla se descarga como ZIP de la versión; Git no es necesario).
 - **No requiere permisos de administrador**: el entorno virtual `.venv` vive dentro de la carpeta del proyecto, `pip` instala ahí, todas las librerías tienen paquetes precompilados para Windows (no se compila nada) y la app escucha solo en `localhost:8501`. La única condición es que la política de PowerShell permita `-ExecutionPolicy Bypass` para el script, o que IT lo firme.
 - Descarga inicial: unos 90 MB de librerías. Si el RDP no tiene acceso a PyPI, IT puede preparar una carpeta con los paquetes (`pip download -r restricciones.txt`) e instalarlos sin internet.
 
@@ -81,10 +81,10 @@ tests/               Pruebas
 ```bash
 python -m pytest                                   # todo debe pasar
 python herramientas/verificar_plantilla.py --generar  # solo si cambió la zona protegida
-# actualizar VERSION y la etiqueta en herramientas/AGENTS_ARRANQUE.md
+# actualizar VERSION y la versión (vX.Y.Z) en herramientas/AGENTS_ARRANQUE.md (3 lugares) y en la guía rápida de AGENTS.md
 # si cambian dependencias: uv pip compile requirements.txt --python-platform x86_64-pc-windows-msvc --python-version 3.10 -o restricciones.txt
-git commit -am "chore: versión 0.5.0"
-git tag v0.5.0 && git push origin main --tags
+git commit -am "chore: versión 0.5.2"
+git tag v0.5.2 && git push origin main --tags
 ```
 
 Las copias existentes no reciben cambios automáticamente. Ante una corrección de seguridad, avisar a los dueños de proyectos con la versión afectada (cada proyecto la registra en `CONTEXTO_PROYECTO.md`).

@@ -18,7 +18,7 @@ Sin contraseñas, tokens, secretos ni datos personales.
 | Usuarios y roles de Entra ID | <pendiente> |
 | Datos y sensibilidad | <pendiente> |
 | Incluido / fuera de alcance | <pendiente> |
-| Ruta | D:\Proyectos\{{NOMBRE_PROYECTO}} |
+| Ruta | {{RUTA_PROYECTO}} |
 
 ## Criterios de aceptación
 | ID | Criterio | Estado y evidencia |
@@ -42,8 +42,8 @@ Sin contraseñas, tokens, secretos ni datos personales.
 
 ## Comandos para ejecutar y probar
 ```powershell
-.\.venv\Scripts\python.exe -m pytest
-.\.venv\Scripts\streamlit.exe run app.py
+Start-Process -FilePath .\.venv\Scripts\streamlit.exe -ArgumentList "run", "app.py"   # abre http://localhost:8501
+.\.venv\Scripts\python.exe -m pytest      # pruebas
 ```
 
 ## Historial breve
