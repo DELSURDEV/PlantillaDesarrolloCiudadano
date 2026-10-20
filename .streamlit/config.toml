@@ -5,7 +5,7 @@
 headless = true
 address = "localhost"
 port = 8501
-runOnSave = false
+runOnSave = true
 enableCORS = true
 enableXsrfProtection = true
 # Solo sirve static/ (fuentes). Todo lo que esté ahí es público y sin inicio de sesión.

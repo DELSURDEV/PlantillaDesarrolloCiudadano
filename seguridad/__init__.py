@@ -1,4 +1,4 @@
-"""Base de seguridad de la plantilla (SSO Microsoft Entra ID). NO MODIFICAR.
+"""Base de seguridad de la plantilla (login contra WAPI_ACCESS). NO MODIFICAR.
 
 Cambios solo por el equipo dueño de la plantilla. Ver AGENTS.md.
 """
@@ -18,8 +18,8 @@ __all__ = [
     "Navegacion",
     "Pagina",
     "PermisoDenegado",
-    "cerrar_sesion",
     "Usuario",
+    "cerrar_sesion",
     "iniciar_aplicacion",
     "requerir_permiso",
     "tiene_permiso",

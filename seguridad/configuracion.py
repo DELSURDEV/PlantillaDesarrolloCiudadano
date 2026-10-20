@@ -3,33 +3,27 @@
 from __future__ import annotations
 
 import re
-try:  # Python 3.11+
-    import tomllib
-except ModuleNotFoundError:  # Python 3.10
-    import tomli as tomllib
 from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import urlsplit
 
-PATRON_GUID = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
-PATRON_METADATOS = re.compile(
-    r"^https://login\.microsoftonline\.com/(?P<tenant>[0-9a-fA-F-]{36})"
-    r"/v2\.0/\.well-known/openid-configuration$"
-)
+try:  # Python 3.11+
+    import tomllib
+except ModuleNotFoundError:  # Python 3.10
+    import tomli as tomllib
+
 PATRON_PERMISO = re.compile(r"^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$")
-HOSTS_LOCALES = {"localhost", "127.0.0.1"}
-CLAVES_AUTH_PERMITIDAS = {
-    "redirect_uri",
-    "cookie_secret",
-    "client_id",
-    "client_secret",
-    "server_metadata_url",
-}
+PATRON_APLICACION = re.compile(r"^/[A-Za-z0-9_-]{1,50}$")
+# Servicio de autenticación y código de aplicación fijos para todas las apps de desarrollo ciudadano.
+# Solo los cambia el equipo dueño de la plantilla (zona protegida).
+URL_LOGIN_WAPI = "http://192.168.132.1/WAPI_ACCESS/api/v2/Auth/login"
+APLICACION_WAPI = "/DCIU"
+CLAVES_WAPI = {"tiempo_espera_s", "permitir_http", "referencia_excepcion_http"}
 RUTA_PERMISOS = Path(__file__).resolve().parents[1] / "config" / "permisos.toml"
 
 
 class ErrorConfiguracion(Exception):
-    """La configuración no es segura. ``problemas`` nunca incluye valores secretos."""
+    """La configuración no es segura. ``problemas`` nunca incluye valores sensibles."""
 
     def __init__(self, problemas: list[str]):
         super().__init__("; ".join(problemas))
@@ -39,11 +33,13 @@ class ErrorConfiguracion(Exception):
 @dataclass(frozen=True)
 class ConfiguracionSeguridad:
     ambiente: str
-    tenant_id: str
-    client_id: str
-    emisor: str
+    url_login: str
+    aplicacion: str
+    tiempo_espera_s: float
     sesion_max_s: int
     inactividad_s: int
+    intentos_maximos: int
+    bloqueo_s: int
     roles_permisos: dict[str, frozenset[str]]
 
     @property
@@ -59,50 +55,38 @@ def _es_marcador(valor: object) -> bool:
     return not isinstance(valor, str) or not valor.strip() or valor.strip().startswith("<")
 
 
-def _validar_auth(auth: dict, ambiente: str, problemas: list[str]) -> tuple[str, str]:
-    extras = set(auth) - CLAVES_AUTH_PERMITIDAS
+def _entero(seccion: dict, clave: str, defecto: int, minimo: int, maximo: int, problemas: list[str]) -> int:
+    valor = seccion.get(clave, defecto)
+    if not isinstance(valor, int) or isinstance(valor, bool) or not minimo <= valor <= maximo:
+        problemas.append(f"[seguridad].{clave} debe ser un entero entre {minimo} y {maximo}")
+        return defecto
+    return valor
+
+
+def _validar_wapi(wapi: dict, ambiente: str, problemas: list[str]) -> tuple[str, str, float]:
+    if {"url_login", "aplicacion"} & set(wapi):
+        problemas.append("[wapi].url_login y [wapi].aplicacion son fijos de la plantilla: quítelos de secrets.toml")
+    extras = set(wapi) - CLAVES_WAPI - {"url_login", "aplicacion"}
     if extras:
-        # expose_tokens, proveedores adicionales o client_kwargs cambian el flujo aprobado.
-        problemas.append(f"[auth] tiene claves no permitidas: {', '.join(sorted(extras))}")
-    for clave in sorted(CLAVES_AUTH_PERMITIDAS):
-        if _es_marcador(auth.get(clave)):
-            problemas.append(f"Falta [auth].{clave}")
+        problemas.append(f"[wapi] tiene claves no permitidas: {', '.join(sorted(extras))}")
 
-    client_id = str(auth.get("client_id", "")).strip().lower()
-    if client_id and not client_id.startswith("<") and not PATRON_GUID.match(client_id):
-        problemas.append("[auth].client_id debe ser un GUID")
-
-    tenant_id = ""
-    metadatos = str(auth.get("server_metadata_url", "")).strip()
-    if metadatos and not metadatos.startswith("<"):
-        coincidencia = PATRON_METADATOS.match(metadatos)
-        tenant = coincidencia.group("tenant").lower() if coincidencia else ""
-        if not PATRON_GUID.match(tenant):
+    url = URL_LOGIN_WAPI
+    partes = urlsplit(url)
+    if ambiente == "produccion" and partes.scheme != "https":
+        excepcion = str(wapi.get("referencia_excepcion_http", "")).strip()
+        if wapi.get("permitir_http") is not True or len(excepcion) < 5:
             problemas.append(
-                "[auth].server_metadata_url debe ser "
-                "https://login.microsoftonline.com/<TENANT_ID GUID>/v2.0/.well-known/"
-                "openid-configuration (no se permiten common/organizations)"
+                "En producción WAPI_ACCESS debe usar HTTPS, o registrar en [wapi] permitir_http = true "
+                "con referencia_excepcion_http (aprobación de IT)"
             )
-        else:
-            tenant_id = tenant
+    if not PATRON_APLICACION.match(APLICACION_WAPI):
+        problemas.append("El código de aplicación de la plantilla no es válido")
 
-    secreto_cookie = auth.get("cookie_secret")
-    if not _es_marcador(secreto_cookie) and len(secreto_cookie) < 32:
-        problemas.append("[auth].cookie_secret debe tener al menos 32 caracteres")
-
-    redirect = str(auth.get("redirect_uri", "")).strip()
-    if redirect and not redirect.startswith("<"):
-        partes = urlsplit(redirect)
-        if partes.path != "/oauth2callback" or partes.query or partes.fragment:
-            problemas.append("[auth].redirect_uri debe terminar exactamente en /oauth2callback")
-        if "*" in redirect:
-            problemas.append("[auth].redirect_uri no admite comodines")
-        local = partes.hostname in HOSTS_LOCALES
-        if partes.scheme != "https" and not (partes.scheme == "http" and local):
-            problemas.append("[auth].redirect_uri debe usar HTTPS (HTTP solo en localhost)")
-        if ambiente == "produccion" and (partes.scheme != "https" or local):
-            problemas.append("En producción [auth].redirect_uri debe ser HTTPS y no local")
-    return tenant_id, client_id
+    tiempo = wapi.get("tiempo_espera_s", 10)
+    if not isinstance(tiempo, (int, float)) or isinstance(tiempo, bool) or not 2 <= tiempo <= 30:
+        problemas.append("[wapi].tiempo_espera_s debe ser un número entre 2 y 30")
+        tiempo = 10
+    return url, APLICACION_WAPI, float(tiempo)
 
 
 def _validar_roles(datos: dict, problemas: list[str]) -> dict[str, frozenset[str]]:
@@ -118,13 +102,12 @@ def _validar_roles(datos: dict, problemas: list[str]) -> dict[str, frozenset[str
         invalidos = [p for p in permisos if not PATRON_PERMISO.match(p)]
         if invalidos:
             problemas.append(f"Permisos con formato inválido en {rol}: {', '.join(invalidos)}")
-        resultado[rol] = frozenset(permisos)
+        # Los roles de WAPI_ACCESS se comparan sin distinguir mayúsculas.
+        resultado[str(rol).strip().upper()] = frozenset(permisos)
     return resultado
 
 
-def cargar_configuracion(
-    secretos: dict, roles: dict | None = None
-) -> ConfiguracionSeguridad:
+def cargar_configuracion(secretos: dict, roles: dict | None = None) -> ConfiguracionSeguridad:
     """Valida ``secretos`` (contenido de secrets.toml) y los roles. Falla cerrado."""
     problemas: list[str] = []
     seguridad = secretos.get("seguridad") or {}
@@ -132,20 +115,16 @@ def cargar_configuracion(
     if ambiente not in {"desarrollo", "produccion"}:
         problemas.append("[seguridad].ambiente debe ser 'desarrollo' o 'produccion'")
 
-    auth = secretos.get("auth")
-    if not isinstance(auth, dict) or not auth:
-        problemas.append("Falta la sección [auth] en .streamlit/secrets.toml")
-        auth = {}
-    tenant_id, client_id = _validar_auth(dict(auth), ambiente, problemas)
+    wapi = secretos.get("wapi") or {}
+    if not isinstance(wapi, dict):
+        problemas.append("[wapi] en .streamlit/secrets.toml debe ser una sección")
+        wapi = {}
+    url, aplicacion, tiempo = _validar_wapi(dict(wapi), ambiente, problemas)
 
-    max_horas = seguridad.get("sesion_max_horas", 8)
-    inactividad_min = seguridad.get("inactividad_min", 30)
-    if not isinstance(max_horas, int) or not 1 <= max_horas <= 12:
-        problemas.append("[seguridad].sesion_max_horas debe ser un entero entre 1 y 12")
-        max_horas = 8
-    if not isinstance(inactividad_min, int) or not 5 <= inactividad_min <= 60:
-        problemas.append("[seguridad].inactividad_min debe ser un entero entre 5 y 60")
-        inactividad_min = 30
+    max_horas = _entero(seguridad, "sesion_max_horas", 8, 1, 12, problemas)
+    inactividad_min = _entero(seguridad, "inactividad_min", 30, 5, 60, problemas)
+    intentos = _entero(seguridad, "intentos_maximos", 5, 3, 10, problemas)
+    bloqueo_min = _entero(seguridad, "bloqueo_min", 15, 1, 60, problemas)
 
     if roles is None:
         try:
@@ -159,10 +138,12 @@ def cargar_configuracion(
         raise ErrorConfiguracion(problemas)
     return ConfiguracionSeguridad(
         ambiente=ambiente,
-        tenant_id=tenant_id,
-        client_id=client_id,
-        emisor=f"https://login.microsoftonline.com/{tenant_id}/v2.0",
+        url_login=url,
+        aplicacion=aplicacion,
+        tiempo_espera_s=tiempo,
         sesion_max_s=max_horas * 3600,
         inactividad_s=inactividad_min * 60,
+        intentos_maximos=intentos,
+        bloqueo_s=bloqueo_min * 60,
         roles_permisos=roles_permisos,
     )

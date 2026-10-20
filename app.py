@@ -1,7 +1,7 @@
 """Punto de entrada. Ejecutar con: streamlit run app.py
 
 Cada página nueva se registra en PAGINAS con su permiso y su grupo del menú.
-Una página que no está en PAGINAS no es accesible.
+Solo se muestran las páginas cuyo permiso tiene alguno de los roles del usuario.
 """
 
 from interfaz import Aplicacion, ejecutar_aplicacion

@@ -15,7 +15,7 @@ Codex: si el usuario pregunta cómo empezar o cómo descargar algo a mano, mués
 
 ```powershell
 cd "<carpeta de proyectos>"
-Invoke-WebRequest "https://raw.githubusercontent.com/DELSURDEV/PlantillaDesarrolloCiudadano/v0.5.2/herramientas/AGENTS_ARRANQUE.md" -OutFile ".\AGENTS.md" -UseBasicParsing
+Invoke-WebRequest "https://raw.githubusercontent.com/DELSURDEV/PlantillaDesarrolloCiudadano/v0.6.2/herramientas/AGENTS_ARRANQUE.md" -OutFile ".\AGENTS.md" -UseBasicParsing
 ```
 
 **Para crear un proyecto:** abre Codex en la carpeta de proyectos y escribe *"Quiero crear una aplicación nueva."* Codex lo descarga y lo prepara (paso 2 de la sección siguiente).
@@ -25,9 +25,9 @@ Invoke-WebRequest "https://raw.githubusercontent.com/DELSURDEV/PlantillaDesarrol
 ```powershell
 cd "<carpeta de proyectos>"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-Invoke-WebRequest "https://github.com/DELSURDEV/PlantillaDesarrolloCiudadano/archive/refs/tags/v0.5.2.zip" -OutFile ".\plantilla.zip" -UseBasicParsing
+Invoke-WebRequest "https://github.com/DELSURDEV/PlantillaDesarrolloCiudadano/archive/refs/tags/v0.6.2.zip" -OutFile ".\plantilla.zip" -UseBasicParsing
 Expand-Archive ".\plantilla.zip" -DestinationPath ".\descarga"
-Move-Item ".\descarga\PlantillaDesarrolloCiudadano-0.5.2" ".\<NOMBRE>"
+Move-Item ".\descarga\PlantillaDesarrolloCiudadano-0.6.2" ".\<NOMBRE>"
 Remove-Item ".\plantilla.zip", ".\descarga" -Recurse -Force
 powershell -ExecutionPolicy Bypass -File ".\<NOMBRE>\herramientas\preparar_proyecto.ps1"
 ```
@@ -44,7 +44,7 @@ Cuando el usuario pida crear una aplicación o proyecto nuevo:
 2. Ejecuta **exactamente** este bloque en PowerShell, desde la carpeta de proyectos, reemplazando solo `<NOMBRE>`. No necesita Git ni permisos de administrador:
    ```powershell
    $nombre = "<NOMBRE>"
-   $version = "v0.5.2"
+   $version = "v0.6.2"
    $ErrorActionPreference = "Stop"
    if ($nombre -notmatch '^[A-Za-z0-9][A-Za-z0-9_-]{2,49}$') { throw "Nombre no válido: use letras, números, - o _ (3 a 50, sin espacios)." }
    $destino = Join-Path (Get-Location) $nombre
@@ -66,7 +66,7 @@ Cuando el usuario pida crear una aplicación o proyecto nuevo:
    El script de preparación desliga el proyecto de la plantilla, crea el entorno `.venv`, instala las librerías y corre las pruebas.
 3. Si un paso falla, muestra el mensaje al usuario y detente. **No** armes la estructura a mano ni descargues la plantilla por otro medio. Si no hay acceso a GitHub, pide al usuario que contacte a IT.
 4. Al terminar, indica al usuario:
-   - Que complete en `<NOMBRE>\.streamlit\secrets.toml` los datos que entrega IT (client_id, client_secret, TENANT_ID), **sin pegarlos en el chat**.
+   - Que el inicio de sesión ya está configurado con WAPI_ACCESS (aplicación `/DCIU`): entra con su usuario y contraseña corporativos. Nunca escriba contraseñas en el chat.
    - Que cierre este chat y abra Codex **desde la carpeta del proyecto** `<NOMBRE>` y escriba:
      > Lee AGENTS.md y CONTEXTO_PROYECTO.md y ayúdame a definir el proyecto.
    - Que para ver la aplicación le pida a Codex, ya en la carpeta del proyecto: *"Abre la aplicación."*

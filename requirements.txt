@@ -1,7 +1,8 @@
 # Dependencias directas, versiones fijas. Python 3.10 o superior.
 # Agregar dependencias solo con justificación (ver AGENTS.md).
 # Las versiones de todas las dependencias indirectas están en restricciones.txt.
-streamlit[auth]==1.65.0
+streamlit==1.65.0
+httpx==0.28.1
 tzdata==2026.5
 tomli==2.3.0; python_version < "3.11"
 pytest==9.1.1
