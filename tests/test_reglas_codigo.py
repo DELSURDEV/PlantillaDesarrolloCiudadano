@@ -28,6 +28,8 @@ PROHIBIDOS = {
     r"\.execute\w*\([^)]*[\"']\s*(%|\+|\.format\()": "SQL concatenado; use parámetros",
     r"(client_secret|password|contrasena|token)\s*=\s*[\"'][^\"'<]{6,}": "posible secreto en el código",
     r"AUTH_DISABLED|SIN_AUTENTICACION|MODO_PRUEBA|saltar_login": "desactivar autenticación",
+    r"^\s*(import|from)\s+(httpx|requests|urllib3?|http\.client|aiohttp|socket)\b": "llamadas de red fuera de seguridad/ (pida el mecanismo aprobado)",
+    r"\bwapi\b|_autenticar_wapi|_intentar_inicio|CLAVE_USUARIO|_seguridad_usuario": "uso interno de la autenticación fuera de seguridad/",
     # Marca (MARCA.md): el diseño sale del tema y de interfaz/, nunca de cada página.
     r"[\"'][^\"'\n]*#[0-9A-Fa-f]{3}(?:[0-9A-Fa-f]{3})?\b": "color fijo en el código; use el tema o interfaz.componentes.COLORES",
     r"<style|\bcss\b|\bstyle\s*=": "CSS propio",
@@ -47,7 +49,7 @@ def _archivos_proyecto():
 @pytest.mark.parametrize("ruta", list(_archivos_proyecto()), ids=lambda r: r.relative_to(RAIZ).as_posix())
 def test_codigo_sin_patrones_prohibidos(ruta):
     texto = ruta.read_text(encoding="utf-8")
-    encontrados = [motivo for patron, motivo in PROHIBIDOS.items() if re.search(patron, texto)]
+    encontrados = [motivo for patron, motivo in PROHIBIDOS.items() if re.search(patron, texto, re.MULTILINE)]
     assert not encontrados, f"{ruta.relative_to(RAIZ)}: {encontrados}"
 
 

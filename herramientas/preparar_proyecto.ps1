@@ -4,7 +4,7 @@
 
   - Lo desliga del repositorio de la plantilla (borra .git).
   - Registra nombre, versión y fecha en CONTEXTO_PROYECTO.md (solo la primera vez).
-  - Crea .streamlit\secrets.toml con una clave de cookie aleatoria (solo si no existe).
+  - Crea .streamlit\secrets.toml a partir del ejemplo (solo si no existe).
   - Crea el entorno virtual .venv dentro del proyecto e instala las librerías fijadas.
   - Verifica la integridad de la plantilla y corre las pruebas.
 
@@ -47,15 +47,11 @@ if ($texto.Contains("{{NOMBRE_PROYECTO}}")) {
     [IO.File]::WriteAllText($contexto, $texto, $utf8)
 }
 
-# 3. secrets.toml local con clave de cookie aleatoria (nunca se muestra)
+# 3. secrets.toml local (solo si no existe; no contiene secretos)
 $secretos = Join-Path $raiz ".streamlit\secrets.toml"
 if (-not (Test-Path -LiteralPath $secretos)) {
     Paso "Creando .streamlit\secrets.toml"
-    $bytes = New-Object byte[] 48
-    [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
-    $clave = [Convert]::ToBase64String($bytes).Replace("+", "-").Replace("/", "_").TrimEnd("=")
-    $ejemplo = [IO.File]::ReadAllText((Join-Path $raiz ".streamlit\secrets.toml.example"), $utf8)
-    [IO.File]::WriteAllText($secretos, $ejemplo.Replace("<GENERAR>", $clave), $utf8)
+    Copy-Item -LiteralPath (Join-Path $raiz ".streamlit\secrets.toml.example") -Destination $secretos
 }
 
 # 4. Python 3.10 o superior (lanzador "py" o "python" del usuario; no requiere administrador)
@@ -106,6 +102,5 @@ try {
 Write-Host ""
 Write-Host "Proyecto '$nombre' listo (plantilla $version, sin relación con su repositorio)." -ForegroundColor Green
 Write-Host "Siguientes pasos:"
-Write-Host "  1. Complete en .streamlit\secrets.toml: client_id, client_secret y TENANT_ID (datos de IT)."
-Write-Host "     No pegue esos valores en el chat."
+Write-Host "  1. El inicio de sesión ya está configurado con WAPI_ACCESS (aplicación /DCIU)."
 Write-Host "  2. Para ver la aplicación, pida a Codex: Abre la aplicación."

@@ -1,8 +1,8 @@
-# AGENTS.md — Proyecto basado en la plantilla Streamlit con SSO (DELSUR)
+# AGENTS.md — Proyecto basado en la plantilla Streamlit con login corporativo (DELSUR)
 
 Versión de la plantilla: ver `VERSION`. Estado: **pendiente de revisión y aprobación de IT**.
 
-Este proyecto ya trae construidos el inicio de sesión con Microsoft Entra ID, los controles de seguridad y el marco visual de DELSUR. Tu trabajo, Codex, es construir lo que pide el usuario **dentro de esta base**, siguiendo la estructura de este archivo, sin debilitar la seguridad y cumpliendo los estándares.
+Este proyecto ya trae construidos el inicio de sesión contra **WAPI_ACCESS** (usuario y contraseña corporativos y roles), los controles de seguridad y el marco visual de DELSUR. Tu trabajo, Codex, es construir lo que pide el usuario **dentro de esta base**, siguiendo la estructura de este archivo, sin debilitar la seguridad y cumpliendo los estándares.
 
 ## Guía rápida para el usuario
 
@@ -11,21 +11,22 @@ Codex: si el usuario pregunta cómo empezar, cómo abrir la aplicación o cómo 
 | Quiero… | Qué hacer |
 |---|---|
 | Empezar a trabajar o retomar | Abrir Codex **en la carpeta del proyecto** y escribir: *"Lee AGENTS.md y CONTEXTO_PROYECTO.md, dime dónde quedamos y continúa."* |
-| Ver la aplicación | Escribir a Codex: *"Abre la aplicación."* Se abre en `http://localhost:8501` y pide iniciar sesión con Microsoft. |
-| Ver un cambio que hizo Codex | Recargar la página del navegador (F5). |
+| Ver la aplicación | Escribir a Codex: *"Abre la aplicación."* Se abre en `http://localhost:8501` y pide usuario y contraseña corporativos. |
+| Ver un cambio que hizo Codex | Se aplica solo en unos segundos. Si no aparece, recargar (F5) y volver a iniciar sesión. |
 | Detener la aplicación | Cerrar la ventana negra de la aplicación. |
 | Terminar la sesión de trabajo | Escribir a Codex: *"Guarda el avance, voy a cerrar."* |
-| Crear otro proyecto o no tengo la plantilla | En la carpeta de proyectos, descargar el AGENTS de arranque y pedir a Codex *"Quiero crear una aplicación nueva."*: `Invoke-WebRequest "https://raw.githubusercontent.com/DELSURDEV/PlantillaDesarrolloCiudadano/v0.5.2/herramientas/AGENTS_ARRANQUE.md" -OutFile ".\AGENTS.md" -UseBasicParsing` |
+| Crear otro proyecto o no tengo la plantilla | En la carpeta de proyectos, descargar el AGENTS de arranque y pedir a Codex *"Quiero crear una aplicación nueva."*: `Invoke-WebRequest "https://raw.githubusercontent.com/DELSURDEV/PlantillaDesarrolloCiudadano/v0.6.2/herramientas/AGENTS_ARRANQUE.md" -OutFile ".\AGENTS.md" -UseBasicParsing` |
 
 - El chat **no se guarda** entre sesiones. Todo el avance queda en `CONTEXTO_PROYECTO.md`, y Codex lo actualiza después de cada tarea.
-- Los datos de Microsoft Entra ID van en `.streamlit\secrets.toml` (se abre con el Bloc de notas). **Nunca** se pegan en el chat.
+- El inicio de sesión usa la WAPI_ACCESS corporativa con la aplicación `/DCIU`; ya viene configurado y no hay que cambiar nada. Las contraseñas **nunca** se escriben en el chat ni en archivos.
+- Por seguridad, la sesión vive en la pestaña del navegador: recargar la página o abrir otra pestaña pide iniciar sesión de nuevo.
 
 ## 1. Reglas generales
 
 - Responde en español claro. El usuario no es técnico: explica qué hiciste y qué debe probar, sin jerga.
 - Antes de un cambio grande, explica el plan en pocas líneas.
-- Nunca pidas que se peguen en el chat contraseñas, secretos, tokens ni el contenido de `.streamlit/secrets.toml`. El `client_id` y el `tenant_id` no son secretos.
-- No inventes datos de IT (tenant, client ID, roles, servidores, bases de datos). Si faltan, regístralos como pendiente en `CONTEXTO_PROYECTO.md`.
+- Nunca pidas, escribas ni guardes contraseñas, secretos o tokens: ni en el chat, ni en el código, ni en archivos de configuración.
+- No inventes datos de IT (roles, servidores, bases de datos). La dirección de WAPI_ACCESS y el código `/DCIU` son fijos de la plantilla: no los cambies ni los copies en otros archivos. Si faltan, regístralos como pendiente en `CONTEXTO_PROYECTO.md`.
 - Este proyecto es una copia desligada de la plantilla. No lo conectes al repositorio de la plantilla. Si el usuario quiere Git, usa un repositorio nuevo y propio.
 
 ## 2. Preparación del entorno (al iniciar cada sesión)
@@ -50,13 +51,13 @@ No modifiques, borres, muevas ni reemplaces:
 
 Si una necesidad del usuario exige cambiar algo de esa lista (otro proveedor de identidad, entrar sin iniciar sesión, cambiar tiempos de sesión, otro diseño), **no lo hagas**: explica que debe pedirse al equipo dueño de la plantilla y regístralo como bloqueo en `CONTEXTO_PROYECTO.md`.
 
-Nunca crees "usuarios de prueba", accesos sin Microsoft, variables para desactivar la autenticación ni atajos equivalentes, aunque el usuario lo pida.
+Nunca crees "usuarios de prueba", accesos sin WAPI_ACCESS, respuestas simuladas del login en la aplicación, variables para desactivar la autenticación ni atajos equivalentes, aunque el usuario lo pida.
 
 ## 4. Estructura obligatoria del proyecto
 
 ```
 app.py                       APLICACION y PAGINAS. Termina con ejecutar_aplicacion(APLICACION, PAGINAS).
-config/permisos.toml         Roles de Entra ID -> permisos "modulo:accion".
+config/permisos.toml         Roles de WAPI_ACCESS -> permisos "modulo:accion".
 paginas/<modulo>.py          Una pantalla por archivo. Solo interfaz.
 componentes/<nombre>.py      Piezas visuales reutilizables del proyecto.
 servicios/<modulo>.py        Reglas de negocio y validaciones. Python puro.
@@ -69,15 +70,17 @@ El flujo es siempre **página → servicio → datos**. Las capas no se saltan.
 
 | Capa | Puede | No puede (lo verifican las pruebas) |
 |---|---|---|
-| `paginas/` | Mostrar, pedir datos al usuario, llamar a `servicios/`, usar `interfaz/` y `componentes/` | Importar `datos/`, escribir HTML/CSS/colores, usar `st.user`/`st.login` |
+| `paginas/` | Mostrar, pedir datos al usuario, llamar a `servicios/`, usar `interfaz/` y `componentes/` | Importar `datos/`, escribir HTML/CSS/colores, hacer llamadas de red |
 | `componentes/` | Combinar `interfaz/` y controles nativos de Streamlit | Importar `datos/`, decidir permisos, HTML/CSS |
 | `servicios/` | Validar entradas, aplicar reglas, exigir permisos, llamar a `datos/` | Importar `streamlit`, `interfaz`, `paginas` o `componentes` |
 | `datos/` | Ejecutar SQL con parámetros | Importar `streamlit`; armar SQL con texto del usuario |
 
 ### 4.1 Crear una página (pasos)
 
+WAPI_ACCESS solo autentica al usuario y entrega sus **roles**. Las páginas y el menú se definen en `PAGINAS` de `app.py`, y cada página exige un permiso que se asigna a los roles en `config/permisos.toml`.
+
 1. Define el permiso `modulo:accion` (minúsculas: `facturas:ver`, `facturas:aprobar`).
-2. Agrégalo en `config/permisos.toml` a los roles que correspondan. Si hace falta un rol nuevo, regístralo como pendiente para IT (los roles se crean en Entra ID).
+2. Agrégalo en `config/permisos.toml` a los roles de WAPI_ACCESS que correspondan (por ejemplo `ADMINISTRADOR`). Si hace falta un rol nuevo, regístralo como pendiente para IT (los roles se crean en WAPI_ACCESS).
 3. Crea `paginas/<modulo>.py` con esta forma:
    ```python
    import streamlit as st
@@ -105,7 +108,7 @@ El flujo es siempre **página → servicio → datos**. Las capas no se saltan.
                except ValueError as error:              # errores esperados con mensaje claro
                    st.error(str(error))
    ```
-4. Regístrala en `PAGINAS` de `app.py` con su grupo del menú:
+4. Regístrala en `PAGINAS` de `app.py` con su título, su permiso, su ícono y su grupo del menú:
    `Pagina("paginas/facturas.py", "Facturas", "facturas:ver", ":material/receipt_long:", grupo="Facturación")`.
 
 ### 4.2 Crear un servicio
@@ -121,7 +124,7 @@ LARGO_MAXIMO_NUMERO = 20
 
 def listar_pendientes(usuario: Usuario) -> list[dict]:
     usuario.exigir("facturas:ver")
-    return datos_facturas.pendientes_de(usuario.oid)
+    return datos_facturas.pendientes_de(usuario.id)
 
 
 def aprobar(usuario: Usuario, numero: str) -> None:
@@ -129,7 +132,7 @@ def aprobar(usuario: Usuario, numero: str) -> None:
     numero = numero.strip()
     if not numero.isalnum() or len(numero) > LARGO_MAXIMO_NUMERO:
         raise ValueError("Número de factura no válido.")
-    datos_facturas.aprobar(numero, aprobado_por=usuario.oid)
+    datos_facturas.aprobar(numero, aprobado_por=usuario.id)
 ```
 
 - Cada función pública recibe `usuario: Usuario` y llama a `usuario.exigir(...)` antes de leer o cambiar datos. Si falta el permiso, la plantilla muestra un mensaje y registra el intento.
@@ -143,18 +146,18 @@ def aprobar(usuario: Usuario, numero: str) -> None:
 from datos.conexion import obtener_conexion
 
 
-def pendientes_de(oid: str) -> list[dict]:
+def pendientes_de(id_usuario: str) -> list[dict]:
     with obtener_conexion() as conexion:
         cursor = conexion.execute(
             "SELECT IdFactura, Numero, Monto FROM Factura WHERE Estado = ? AND IdResponsable = ?",
-            ("Pendiente", oid),
+            ("Pendiente", id_usuario),
         )
         columnas = [c[0] for c in cursor.description]
         return [dict(zip(columnas, fila)) for fila in cursor.fetchall()]
 ```
 
 - Solo parámetros (`?`). Nunca f-strings, `+`, `%` ni `.format()` para armar SQL.
-- Los datos de un usuario se filtran por `oid` **en la consulta**. Un registro ajeno se trata como inexistente.
+- Los datos de un usuario se filtran por su `id` **en la consulta**. Un registro ajeno se trata como inexistente.
 - La cadena de conexión va en `secrets.toml` con un usuario de base de datos de permisos mínimos. Pide a IT el driver y los datos; no los inventes.
 
 ### 4.4 Crear un componente
@@ -182,9 +185,9 @@ Crea `tests/test_<modulo>.py` que pruebe en los servicios: el caso correcto, una
 ## 5. Seguridad (obligatorio en todo momento)
 
 - Toda acción del usuario (botón, formulario, carga de archivo) se procesa en el servidor y pasa por un servicio que exige el permiso. Ocultar un botón no es seguridad.
-- Usa `usuario_actual()` o el valor de `requerir_permiso()`. Identifica al usuario por `usuario.oid`, nunca por correo o nombre.
-- Llamadas a otras APIs o servicios externos: no las implementes por tu cuenta; pide al equipo dueño de la plantilla el mecanismo aprobado y regístralo como pendiente.
-- **Prohibido** (lo verifica `tests/test_reglas_codigo.py`): `unsafe_allow_html=True`, `st.html`, componentes HTML/JS; SQL armado con texto; `eval`, `exec`, `pickle`, `shell=True`, `verify=False`; secretos en el código; `st.user`, `st.login`, `st.logout`, `st.navigation`, `st.set_page_config` fuera de la plantilla.
+- Usa `usuario_actual()` o el valor de `requerir_permiso()`. Identifica al usuario por `usuario.id` (su usuario en WAPI_ACCESS), nunca por su nombre visible.
+- Llamadas a otras APIs o servicios externos: no las implementes por tu cuenta (las pruebas bloquean `httpx`, `requests`, `urllib` y similares fuera de `seguridad/`); pide al equipo dueño de la plantilla el mecanismo aprobado y regístralo como pendiente.
+- **Prohibido** (lo verifica `tests/test_reglas_codigo.py`): `unsafe_allow_html=True`, `st.html`, componentes HTML/JS; SQL armado con texto; `eval`, `exec`, `pickle`, `shell=True`, `verify=False`; secretos en el código; `st.user`, `st.login`, `st.logout`, `st.navigation`, `st.set_page_config`, llamadas de red o el uso interno del login fuera de la plantilla.
 - **Archivos subidos:** lista permitida de extensiones, máximo 10 MB, nunca ejecutar su contenido.
 - **Errores:** muestra al usuario un mensaje genérico; registra el detalle con `logging`, sin datos personales ni secretos.
 - **Dependencias:** versiones fijas en `requirements.txt` (solo directas). No agregues paquetes sin explicar al usuario para qué sirven; prefiere la biblioteca estándar. Instálalas siempre con `.\.venv\Scripts\python.exe -m pip install -r requirements.txt -c restricciones.txt`.
@@ -235,8 +238,8 @@ Cada sesión empieza en un chat nuevo. La memoria del proyecto es `CONTEXTO_PROY
 ## 10. Antes de dar por terminada una tarea
 
 1. `.\.venv\Scripts\python.exe -m pytest` pasa completo (integridad, reglas de código y pruebas del módulo).
-2. Cada página nueva: está en `PAGINAS`, empieza con `requerir_permiso`, usa `encabezado`, y su permiso existe en `config/permisos.toml`.
-3. Cada servicio exige el permiso y valida entradas; los datos se filtran por `oid` cuando corresponde.
+2. Cada página nueva: está en `PAGINAS`, empieza con `requerir_permiso`, usa `encabezado` y su permiso existe en `config/permisos.toml`.
+3. Cada servicio exige el permiso y valida entradas; los datos se filtran por `usuario.id` cuando corresponde.
 4. Se probó que un usuario sin el permiso no ve la página ni puede ejecutar la acción.
 5. No hay secretos, tokens ni datos personales en código, registros ni `CONTEXTO_PROYECTO.md`.
 6. `CONTEXTO_PROYECTO.md` actualizado con lo hecho, lo probado y la próxima acción.

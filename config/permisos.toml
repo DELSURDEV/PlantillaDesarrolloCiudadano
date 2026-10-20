@@ -1,7 +1,8 @@
-# Roles de aplicación (definidos por IT en Entra ID) -> permisos "modulo:accion".
-# Un rol que no esté aquí no recibe ningún permiso (denegado por defecto).
-# Al crear un módulo, agregue sus permisos al rol que corresponda. Ver AGENTS.md, sección 4.
+# Roles que devuelve WAPI_ACCESS (por ejemplo "ADMINISTRADOR") -> permisos "modulo:accion".
+# Los nombres de rol no distinguen mayúsculas. Un rol que no esté aquí no recibe permisos.
+# Estos permisos deciden qué páginas ve cada usuario y qué puede hacer en ellas.
+# Ver AGENTS.md, sección 4.
 
 [roles]
-Usuario = ["inicio:ver"]
-Administrador = ["inicio:ver"]
+ADMINISTRADOR = ["inicio:ver"]
+USUARIO = ["inicio:ver"]

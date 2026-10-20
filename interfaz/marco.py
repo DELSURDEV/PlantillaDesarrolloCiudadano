@@ -1,21 +1,21 @@
 """Marco de la aplicación: acceso, barra lateral, barra superior y pie. NO MODIFICAR (zona protegida).
 
-El contenido de estos bloques sale de la configuración de la aplicación y de Entra ID;
+El contenido de estos bloques sale de la configuración de la aplicación y de WAPI_ACCESS;
 todo texto se escapa antes de mostrarse.
 """
 
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date
 from html import escape
-from itertools import groupby
 from pathlib import Path
 
 import streamlit as st
 
 from seguridad import Navegacion, Pagina, cerrar_sesion, iniciar_aplicacion
+from seguridad.autorizacion import IniciarSesion
 
 from .componentes import reiniciar_contador
 
@@ -43,7 +43,9 @@ def ejecutar_aplicacion(aplicacion: Aplicacion, paginas: Sequence[Pagina]) -> No
     st.html(ESTILOS)
 
     # Se detiene aquí si no hay sesión válida (muestra la pantalla de acceso).
-    navegacion = iniciar_aplicacion(paginas, lambda iniciar: _pantalla_acceso(aplicacion, iniciar))
+    navegacion = iniciar_aplicacion(
+        paginas, lambda iniciar, aviso: _pantalla_acceso(aplicacion, iniciar, aviso)
+    )
 
     _barra_lateral(navegacion)
     _barra_superior(aplicacion, navegacion)
@@ -54,7 +56,7 @@ def ejecutar_aplicacion(aplicacion: Aplicacion, paginas: Sequence[Pagina]) -> No
 # ---------------------------------------------------------------- Acceso
 
 
-def _pantalla_acceso(aplicacion: Aplicacion, iniciar: Callable[[], None]) -> None:
+def _pantalla_acceso(aplicacion: Aplicacion, iniciar: IniciarSesion, aviso: str | None) -> None:
     modulo = aplicacion.modulo or aplicacion.nombre
     with st.container(key="delsur-acceso"):
         marca, acceso = st.columns([1.1, 1], gap=None)
@@ -69,16 +71,23 @@ def _pantalla_acceso(aplicacion: Aplicacion, iniciar: Callable[[], None]) -> Non
         with acceso, st.container(key="delsur-acceso-formulario"):
             st.caption(modulo)
             st.header("Ingrese a su cuenta", anchor=False)
-            st.write(
-                f"Use su cuenta corporativa de Microsoft para acceder a {aplicacion.nombre}."
-            )
-            if st.button(
-                "Iniciar sesión con Microsoft",
-                type="primary",
-                icon=":material/login:",
-                width="stretch",
-            ):
-                iniciar()
+            st.write(f"Use su usuario y contraseña corporativos para acceder a {aplicacion.nombre}.")
+            if aviso:
+                st.info(aviso)
+            with st.form("delsur-acceso-credenciales", clear_on_submit=True, border=False):
+                usuario = st.text_input("Usuario", max_chars=128, autocomplete="username")
+                contrasena = st.text_input(
+                    "Contraseña", type="password", max_chars=256, autocomplete="current-password"
+                )
+                enviado = st.form_submit_button(
+                    "Iniciar sesión", type="primary", icon=":material/login:", width="stretch"
+                )
+            if enviado:
+                error = iniciar(usuario, contrasena)
+                if error:
+                    st.error(error)
+                else:
+                    st.rerun()
 
 
 # ---------------------------------------------------------------- Barra lateral
@@ -89,13 +98,21 @@ def _iniciales(nombre: str) -> str:
     return "".join(p[0] for p in partes[:2]).upper() or "U"
 
 
+def _por_grupo(entradas):
+    """Agrupa las entradas del menú conservando el orden de la primera aparición de cada grupo."""
+    grupos: dict[str, list] = {}
+    for entrada in entradas:
+        grupos.setdefault(entrada.grupo, []).append(entrada)
+    return grupos.items()
+
+
 def _barra_lateral(navegacion: Navegacion) -> None:
     usuario = navegacion.usuario
     with st.sidebar:
         with st.container(key="delsur-logo"):
             st.image(str(LOGO_BLANCO), width=140)
         with st.container(key="delsur-menu"):
-            for grupo, entradas in groupby(navegacion.entradas, key=lambda e: e.pagina.grupo):
+            for grupo, entradas in _por_grupo(navegacion.entradas):
                 st.caption(grupo.upper())
                 for entrada in entradas:
                     st.page_link(entrada.destino)
@@ -117,18 +134,18 @@ def _barra_lateral(navegacion: Navegacion) -> None:
 def _barra_superior(aplicacion: Aplicacion, navegacion: Navegacion) -> None:
     actual = navegacion.actual
     inicio = navegacion.entradas[0]
-    primera_del_grupo = next(e for e in navegacion.entradas if e.pagina.grupo == actual.pagina.grupo)
+    primera_del_grupo = next(e for e in navegacion.entradas if e.grupo == actual.grupo)
     with st.container(key="delsur-barra", horizontal=True, vertical_alignment="center"):
         with st.container(key="delsur-migas", horizontal=True, vertical_alignment="center", gap="small"):
             st.page_link(inicio.destino, label=aplicacion.nombre, icon=None)
             st.caption("/")
             if primera_del_grupo is actual:
-                st.caption(actual.pagina.grupo)
+                st.caption(actual.grupo)
             else:
-                st.page_link(primera_del_grupo.destino, label=actual.pagina.grupo, icon=None)
+                st.page_link(primera_del_grupo.destino, label=actual.grupo, icon=None)
             st.caption("/")
             with st.container(key="delsur-migas-actual", width="content"):
-                st.caption(actual.pagina.titulo)
+                st.caption(actual.titulo)
         ambiente = ""
         if navegacion.ambiente != "produccion":
             ambiente = f'<span class="pastilla aviso">{escape(NOMBRES_AMBIENTE[navegacion.ambiente])}</span>'

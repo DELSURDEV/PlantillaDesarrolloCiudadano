@@ -66,7 +66,7 @@ st.dataframe(datos, hide_index=True)
 
 ## 3. Estructura de cada pantalla
 
-El marco lo pone `ejecutar_aplicacion` en `app.py` y no se toca: pantalla de acceso dividida (marca a la izquierda, botón de Microsoft a la derecha, sin menú); barra lateral azul con logo, menú agrupado y usuario con rol al fondo; barra superior con la ruta navegable (aplicación / grupo / página), el ambiente y el estado de conexión; pie con nombre, descripción, versión, ambiente y área responsable.
+El marco lo pone `ejecutar_aplicacion` en `app.py` y no se toca: pantalla de acceso dividida (marca a la izquierda, usuario y contraseña a la derecha, sin menú); barra lateral azul con logo, menú agrupado y usuario con rol al fondo; barra superior con la ruta navegable (aplicación / grupo / página), el ambiente y el estado de conexión; pie con nombre, descripción, versión, ambiente y área responsable.
 
 Dentro de cada página:
 
