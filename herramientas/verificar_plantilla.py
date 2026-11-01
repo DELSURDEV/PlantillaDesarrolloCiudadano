@@ -23,8 +23,11 @@ PROTEGIDOS = [
     "tests/test_seguridad.py",
     "tests/test_reglas_codigo.py",
     "tests/test_integridad.py",
+    "tests/test_herramientas.py",
     "herramientas/verificar_plantilla.py",
     "herramientas/preparar_proyecto.ps1",
+    "herramientas/abrir_aplicacion.ps1",
+    "herramientas/ejecutar_pruebas.ps1",
     "restricciones.txt",
 ]
 

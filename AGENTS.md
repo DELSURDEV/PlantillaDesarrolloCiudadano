@@ -10,13 +10,15 @@ Codex: si el usuario pregunta cómo empezar, cómo abrir la aplicación o cómo 
 
 | Quiero… | Qué hacer |
 |---|---|
-| Empezar a trabajar o retomar | Abrir Codex **en la carpeta del proyecto** y escribir: *"Lee AGENTS.md y CONTEXTO_PROYECTO.md, dime dónde quedamos y continúa."* |
+| Empezar a trabajar o retomar | Abrir Codex **en la carpeta del proyecto** (`E:\Data\<NOMBRE>`) y escribir: *"Lee AGENTS.md y CONTEXTO_PROYECTO.md, dime dónde quedamos y continúa."* |
 | Ver la aplicación | Escribir a Codex: *"Abre la aplicación."* Se abre en `http://localhost:8501` y pide usuario y contraseña corporativos. |
+| Abrirla en otro puerto | Si el 8501 está ocupado, escribir a Codex: *"Abre la aplicación en el puerto 8502."* |
 | Ver un cambio que hizo Codex | Se aplica solo en unos segundos. Si no aparece, recargar (F5) y volver a iniciar sesión. |
 | Detener la aplicación | Cerrar la ventana negra de la aplicación. |
 | Terminar la sesión de trabajo | Escribir a Codex: *"Guarda el avance, voy a cerrar."* |
-| Crear otro proyecto o no tengo la plantilla | En la carpeta de proyectos, descargar el AGENTS de arranque y pedir a Codex *"Quiero crear una aplicación nueva."*: `Invoke-WebRequest "https://raw.githubusercontent.com/DELSURDEV/PlantillaDesarrolloCiudadano/v0.6.2/herramientas/AGENTS_ARRANQUE.md" -OutFile ".\AGENTS.md" -UseBasicParsing` |
+| Crear otro proyecto o no tengo la plantilla | En `E:\Data`, descargar el AGENTS de arranque y pedir a Codex *"Quiero crear una aplicación nueva."*: `cd "E:\Data"; Invoke-WebRequest "https://raw.githubusercontent.com/DELSURDEV/PlantillaDesarrolloCiudadano/v0.7.0/herramientas/AGENTS_ARRANQUE.md" -OutFile ".\AGENTS.md" -UseBasicParsing` |
 
+- Los proyectos se guardan en `E:\Data\<NOMBRE>`, una carpeta por proyecto.
 - El chat **no se guarda** entre sesiones. Todo el avance queda en `CONTEXTO_PROYECTO.md`, y Codex lo actualiza después de cada tarea.
 - El inicio de sesión usa la WAPI_ACCESS corporativa con la aplicación `/DCIU`; ya viene configurado y no hay que cambiar nada. Las contraseñas **nunca** se escriben en el chat ni en archivos.
 - Por seguridad, la sesión vive en la pestaña del navegador: recargar la página o abrir otra pestaña pide iniciar sesión de nuevo.
@@ -28,6 +30,7 @@ Codex: si el usuario pregunta cómo empezar, cómo abrir la aplicación o cómo 
 - Nunca pidas, escribas ni guardes contraseñas, secretos o tokens: ni en el chat, ni en el código, ni en archivos de configuración.
 - No inventes datos de IT (roles, servidores, bases de datos). La dirección de WAPI_ACCESS y el código `/DCIU` son fijos de la plantilla: no los cambies ni los copies en otros archivos. Si faltan, regístralos como pendiente en `CONTEXTO_PROYECTO.md`.
 - Este proyecto es una copia desligada de la plantilla. No lo conectes al repositorio de la plantilla. Si el usuario quiere Git, usa un repositorio nuevo y propio.
+- Nunca borres `.git`, cambies remotos ni reinicies un repositorio existente (tampoco los anidados). No muevas ni borres proyectos de `E:\Data`.
 
 ## 2. Preparación del entorno (al iniciar cada sesión)
 
@@ -37,7 +40,7 @@ El RDP puede reiniciarse entre sesiones. Antes de trabajar:
    ```powershell
    powershell -ExecutionPolicy Bypass -File .\herramientas\preparar_proyecto.ps1
    ```
-   Si el entorno quedó dañado o cambió la versión de Python, agrega `-Reinstalar`. No requiere permisos de administrador.
+   Si el entorno quedó dañado o cambió la versión de Python, agrega `-Reinstalar`. No requiere permisos de administrador. Solo prepara el entorno: no toca Git ni sobrescribe `CONTEXTO_PROYECTO.md` ni `secrets.toml` existentes. Si se detiene porque la carpeta está ligada al repositorio de la plantilla, no intentes desligarla: explícaselo al usuario.
 2. Usa siempre el Python del proyecto: `.\.venv\Scripts\python.exe`. Nunca instales paquetes fuera de `.venv` ni con `--user`.
 
 ## 3. Zona protegida (no modificar)
@@ -46,7 +49,7 @@ No modifiques, borres, muevas ni reemplaces:
 
 - `seguridad/`, `interfaz/`, `static/`, `recursos/`
 - `.streamlit/config.toml` y `.streamlit/secrets.toml.example`
-- `tests/test_seguridad.py`, `tests/test_reglas_codigo.py`, `tests/test_integridad.py`
+- `tests/test_seguridad.py`, `tests/test_reglas_codigo.py`, `tests/test_integridad.py`, `tests/test_herramientas.py`
 - `herramientas/` y `restricciones.txt`
 
 Si una necesidad del usuario exige cambiar algo de esa lista (otro proveedor de identidad, entrar sin iniciar sesión, cambiar tiempos de sesión, otro diseño), **no lo hagas**: explica que debe pedirse al equipo dueño de la plantilla y regístralo como bloqueo en `CONTEXTO_PROYECTO.md`.
@@ -61,8 +64,7 @@ config/permisos.toml         Roles de WAPI_ACCESS -> permisos "modulo:accion".
 paginas/<modulo>.py          Una pantalla por archivo. Solo interfaz.
 componentes/<nombre>.py      Piezas visuales reutilizables del proyecto.
 servicios/<modulo>.py        Reglas de negocio y validaciones. Python puro.
-datos/<modulo>.py            Consultas a la base de datos. Solo SQL parametrizado.
-datos/conexion.py            Conexión (se crea cuando haya base de datos; credenciales en secrets.toml).
+datos/<modulo>.py            Acceso a datos. Fuera del alcance de esta versión (ver 4.3).
 tests/test_<modulo>.py       Pruebas de servicios y datos del módulo.
 ```
 
@@ -80,7 +82,7 @@ El flujo es siempre **página → servicio → datos**. Las capas no se saltan.
 WAPI_ACCESS solo autentica al usuario y entrega sus **roles**. Las páginas y el menú se definen en `PAGINAS` de `app.py`, y cada página exige un permiso que se asigna a los roles en `config/permisos.toml`.
 
 1. Define el permiso `modulo:accion` (minúsculas: `facturas:ver`, `facturas:aprobar`).
-2. Agrégalo en `config/permisos.toml` a los roles de WAPI_ACCESS que correspondan (por ejemplo `ADMINISTRADOR`). Si hace falta un rol nuevo, regístralo como pendiente para IT (los roles se crean en WAPI_ACCESS).
+2. Agrégalo en `config/permisos.toml` a los roles de WAPI_ACCESS que correspondan. Los roles confirmados para `/DCIU` son `ADMINISTRADOR` y `USUARIO`. Si hace falta un rol nuevo, regístralo como pendiente para IT (los roles se crean en WAPI_ACCESS).
 3. Crea `paginas/<modulo>.py` con esta forma:
    ```python
    import streamlit as st
@@ -135,30 +137,18 @@ def aprobar(usuario: Usuario, numero: str) -> None:
     datos_facturas.aprobar(numero, aprobado_por=usuario.id)
 ```
 
+- Mientras no exista un acceso a datos aprobado (ver 4.3), el servicio no llama a `datos/`; el ejemplo muestra el patrón para cuando se habilite.
 - Cada función pública recibe `usuario: Usuario` y llama a `usuario.exigir(...)` antes de leer o cambiar datos. Si falta el permiso, la plantilla muestra un mensaje y registra el intento.
 - Valida tipo, largo, rango y formato de todo lo que escribe el usuario. Los errores esperados se lanzan como `ValueError` con un mensaje claro para el usuario.
 
-### 4.3 Crear acceso a datos
+### 4.3 Acceso a datos (fuera del alcance de esta versión)
 
-```python
-"""Consultas de facturas."""
+Esta versión **no define** conexión a bases de datos ni a otros recursos internos. Es una decisión de alcance:
 
-from datos.conexion import obtener_conexion
-
-
-def pendientes_de(id_usuario: str) -> list[dict]:
-    with obtener_conexion() as conexion:
-        cursor = conexion.execute(
-            "SELECT IdFactura, Numero, Monto FROM Factura WHERE Estado = ? AND IdResponsable = ?",
-            ("Pendiente", id_usuario),
-        )
-        columnas = [c[0] for c in cursor.description]
-        return [dict(zip(columnas, fila)) for fila in cursor.fetchall()]
-```
-
-- Solo parámetros (`?`). Nunca f-strings, `+`, `%` ni `.format()` para armar SQL.
-- Los datos de un usuario se filtran por su `id` **en la consulta**. Un registro ajeno se trata como inexistente.
-- La cadena de conexión va en `secrets.toml` con un usuario de base de datos de permisos mínimos. Pide a IT el driver y los datos; no los inventes.
+- No crees `datos/conexion.py`, no agregues drivers (SQL Server, Oracle, SQLite u otros) ni cadenas o credenciales de conexión, aunque el usuario lo pida.
+- Lo que la aplicación captura vive solo en la sesión de la pestaña: se pierde al recargar, cerrar la pestaña o cerrar la aplicación. Díselo al usuario cuando su proceso necesite conservar información.
+- Si el proyecto necesita guardar o consultar datos de forma permanente, regístralo en `CONTEXTO_PROYECTO.md` como pendiente para el equipo dueño de la plantilla. El inicio de sesión identifica al usuario, pero no autoriza a la aplicación a usar recursos internos: eso requiere un mecanismo corporativo que aún no existe.
+- Cuando se habilite, `datos/` contendrá solo consultas con parámetros, filtradas por `usuario.id`. Las pruebas ya bloquean SQL armado con f-strings, `+`, `%` o `.format()`.
 
 ### 4.4 Crear un componente
 
@@ -202,7 +192,7 @@ Crea `tests/test_<modulo>.py` que pruebe en los servicios: el caso correcto, una
 - Compatible con Python 3.10: no uses `tomllib`, `datetime.UTC`, `typing.Self` ni otras funciones exclusivas de 3.11 o superior.
 - No usar estilo C#: prefijos de tipo (`strNombre`), camelCase en variables, getters/setters innecesarios.
 
-## 7. Convenciones SQL Server / Azure SQL
+## 7. Convenciones SQL Server / Azure SQL (cuando se habilite el acceso a datos)
 
 - **Tablas** en singular y PascalCase (`DetalleTransaccion`), sin prefijos `tb`/`tbl`, guiones bajos ni abreviaturas.
 - **Columnas** en PascalCase, sin prefijos de tipo.
@@ -237,7 +227,7 @@ Cada sesión empieza en un chat nuevo. La memoria del proyecto es `CONTEXTO_PROY
 
 ## 10. Antes de dar por terminada una tarea
 
-1. `.\.venv\Scripts\python.exe -m pytest` pasa completo (integridad, reglas de código y pruebas del módulo).
+1. `powershell -ExecutionPolicy Bypass -File .\herramientas\ejecutar_pruebas.ps1` pasa completo (integridad, reglas de código, scripts de la plantilla y pruebas del módulo). Revisa el motivo de cada prueba omitida: "no disponible" indica que falta algo en el equipo; no lo presentes como aprobado.
 2. Cada página nueva: está en `PAGINAS`, empieza con `requerir_permiso`, usa `encabezado` y su permiso existe en `config/permisos.toml`.
 3. Cada servicio exige el permiso y valida entradas; los datos se filtran por `usuario.id` cuando corresponde.
 4. Se probó que un usuario sin el permiso no ve la página ni puede ejecutar la acción.
@@ -249,9 +239,12 @@ Cada sesión empieza en un chat nuevo. La memoria del proyecto es `CONTEXTO_PROY
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\herramientas\preparar_proyecto.ps1   # preparar o reparar el entorno
-.\.venv\Scripts\python.exe -m pytest                                              # pruebas
+powershell -ExecutionPolicy Bypass -File .\herramientas\ejecutar_pruebas.ps1     # pruebas (carpeta temporal propia)
 .\.venv\Scripts\python.exe herramientas\verificar_plantilla.py                    # integridad
-Start-Process -FilePath .\.venv\Scripts\streamlit.exe -ArgumentList "run", "app.py"   # abre la aplicación (ventana aparte)
+powershell -ExecutionPolicy Bypass -File .\herramientas\abrir_aplicacion.ps1                 # abre la aplicación en http://localhost:8501 (ventana aparte)
+powershell -ExecutionPolicy Bypass -File .\herramientas\abrir_aplicacion.ps1 -Puerto 8502    # en otro puerto
 ```
 
-Para abrir la aplicación usa siempre el `Start-Process` anterior: se abre en una ventana aparte y tu sesión no queda bloqueada. No ejecutes `streamlit run` directamente en tu terminal. Si el puerto 8501 ya está en uso, la aplicación ya está abierta: pide al usuario recargar el navegador.
+Para las pruebas usa siempre `ejecutar_pruebas.ps1` (acepta argumentos de pytest, por ejemplo `-q tests\test_facturas.py`): crea una carpeta temporal propia en `%LOCALAPPDATA%\pytest-plantilla`, fuera del proyecto y de `E:\Data`. No uses `--basetemp` ni configures `PYTEST_DEBUG_TEMPROOT` a mano.
+
+Para abrir la aplicación usa siempre `abrir_aplicacion.ps1`: la abre en una ventana aparte, espera a que responda y abre el navegador en la dirección efectiva; tu sesión no queda bloqueada. No ejecutes `streamlit run` directamente en tu terminal ni cambies el puerto en `.streamlit/config.toml`. Si el script indica que el puerto está ocupado, **no cierres procesos**: pregunta al usuario si es su aplicación (en ese caso, que recargue el navegador) o si prefiere abrirla en el puerto que sugiere el mensaje.

@@ -2,7 +2,8 @@
 .SYNOPSIS
   Prepara un proyecto descargado de la plantilla. No requiere permisos de administrador.
 
-  - Lo desliga del repositorio de la plantilla (borra .git).
+  - Nunca borra, cambia ni reinicia repositorios Git (.git), propios o anidados.
+  - Se detiene sin cambiar nada si la carpeta está ligada al repositorio de la plantilla.
   - Registra nombre, versión y fecha en CONTEXTO_PROYECTO.md (solo la primera vez).
   - Crea .streamlit\secrets.toml a partir del ejemplo (solo si no existe).
   - Crea el entorno virtual .venv dentro del proyecto e instala las librerías fijadas.
@@ -21,6 +22,9 @@ param(
 
 $ErrorActionPreference = "Stop"
 $utf8 = New-Object System.Text.UTF8Encoding $false
+# Carpeta persistente del RDP donde se guarda cada proyecto (E:\Data\<NOMBRE>).
+$CARPETA_PROYECTOS = "E:\Data"
+$REPOSITORIO_PLANTILLA = "DELSURDEV/PlantillaDesarrolloCiudadano"
 function Paso([string]$texto) { Write-Host "==> $texto" -ForegroundColor Cyan }
 
 $raiz = Split-Path -Parent $PSScriptRoot
@@ -30,12 +34,31 @@ if ($nombre -notmatch '^[A-Za-z0-9][A-Za-z0-9_-]{2,49}$') {
 }
 $version = "v" + ([IO.File]::ReadAllText((Join-Path $raiz "VERSION"))).Trim()
 
-# 1. Desligar del repositorio de la plantilla
-$carpetaGit = Join-Path $raiz ".git"
-if (Test-Path -LiteralPath $carpetaGit) {
-    Paso "Desligando el proyecto del repositorio de la plantilla"
-    Get-ChildItem -LiteralPath $carpetaGit -Recurse -Force | ForEach-Object { $_.Attributes = "Normal" }
-    Remove-Item -LiteralPath $carpetaGit -Recurse -Force
+# 1. Comprobar que no es el repositorio de la plantilla. Solo se lee .git; nunca se modifica.
+#    Un repositorio propio del usuario (o uno anidado) se conserva íntegro.
+function Leer-ConfiguracionGit([string]$carpeta) {
+    $git = Join-Path $carpeta ".git"
+    $config = $null
+    if (Test-Path -LiteralPath $git -PathType Container) {
+        $config = Join-Path $git "config"
+    } elseif (Test-Path -LiteralPath $git -PathType Leaf) {
+        # .git como archivo ("gitdir: <ruta>"), por ejemplo en submódulos.
+        $linea = ([IO.File]::ReadAllText($git)).Trim()
+        if ($linea -match '^gitdir:\s*(.+)$') {
+            $directorio = $Matches[1]
+            if (-not [IO.Path]::IsPathRooted($directorio)) { $directorio = Join-Path $carpeta $directorio }
+            $config = Join-Path $directorio "config"
+        }
+    }
+    if ($config -and (Test-Path -LiteralPath $config -PathType Leaf)) { return [IO.File]::ReadAllText($config) }
+    return ""
+}
+if ((Leer-ConfiguracionGit $raiz).IndexOf($REPOSITORIO_PLANTILLA, [StringComparison]::OrdinalIgnoreCase) -ge 0) {
+    throw ("Esta carpeta está ligada al repositorio de la plantilla ($REPOSITORIO_PLANTILLA). " +
+        "No se hizo ningún cambio. Cree el proyecto con la descarga de AGENTS_ARRANQUE.md en $CARPETA_PROYECTOS.")
+}
+if (-not $raiz.StartsWith($CARPETA_PROYECTOS + "\", [StringComparison]::OrdinalIgnoreCase)) {
+    Write-Warning "El proyecto no está en $CARPETA_PROYECTOS. En el RDP guarde cada proyecto en $CARPETA_PROYECTOS\<NOMBRE>."
 }
 
 # 2. CONTEXTO_PROYECTO.md (solo si aún tiene los marcadores de la plantilla)
@@ -93,14 +116,13 @@ Paso "Verificando la plantilla"
 & $pythonVenv (Join-Path $raiz "herramientas\verificar_plantilla.py")
 if ($LASTEXITCODE -ne 0) { throw "La base de seguridad de la plantilla fue modificada." }
 Paso "Corriendo las pruebas"
-Push-Location $raiz
-try {
-    & $pythonVenv -m pytest -q -p no:cacheprovider
-    if ($LASTEXITCODE -ne 0) { throw "Hay pruebas que no pasan." }
-} finally { Pop-Location }
+# Mismo mecanismo que la ejecución manual: carpeta temporal propia, fuera del proyecto y de E:\Data.
+& (Join-Path $PSScriptRoot "ejecutar_pruebas.ps1") -q
+if ($LASTEXITCODE -ne 0) { throw "Hay pruebas que no pasan." }
 
 Write-Host ""
 Write-Host "Proyecto '$nombre' listo (plantilla $version, sin relación con su repositorio)." -ForegroundColor Green
 Write-Host "Siguientes pasos:"
 Write-Host "  1. El inicio de sesión ya está configurado con WAPI_ACCESS (aplicación /DCIU)."
 Write-Host "  2. Para ver la aplicación, pida a Codex: Abre la aplicación."
+Write-Host "     O ejecute: powershell -ExecutionPolicy Bypass -File .\herramientas\abrir_aplicacion.ps1"

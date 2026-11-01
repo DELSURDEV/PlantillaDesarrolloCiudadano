@@ -1,4 +1,5 @@
-# Roles que devuelve WAPI_ACCESS (por ejemplo "ADMINISTRADOR") -> permisos "modulo:accion".
+# Roles que devuelve WAPI_ACCESS -> permisos "modulo:accion".
+# Roles confirmados en WAPI_ACCESS para /DCIU: ADMINISTRADOR y USUARIO. Un rol nuevo lo crea IT.
 # Los nombres de rol no distinguen mayúsculas. Un rol que no esté aquí no recibe permisos.
 # Estos permisos deciden qué páginas ve cada usuario y qué puede hacer en ellas.
 # Ver AGENTS.md, sección 4.

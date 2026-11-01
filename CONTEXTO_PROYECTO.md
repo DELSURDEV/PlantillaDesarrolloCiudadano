@@ -6,7 +6,7 @@ Sin contraseñas, tokens, secretos ni datos personales.
 - Estado: creado desde la plantilla, sin funcionalidad propia
 - Trabajo en curso: ninguno
 - Próxima acción: definir con el usuario el objetivo, los usuarios y los roles
-- Bloqueo principal: roles del proyecto asignados en WAPI_ACCESS (aplicación /DCIU)
+- Bloqueo principal: cuenta de desarrollo del usuario en WAPI_ACCESS (aplicación /DCIU) con rol ADMINISTRADOR o USUARIO
 - Seguridad y login: base de la plantilla {{VERSION_PLANTILLA}} · aprobación de IT: pendiente
 - Última actualización: {{FECHA}}
 
@@ -38,12 +38,12 @@ Sin contraseñas, tokens, secretos ni datos personales.
 ## Pendientes y bloqueos
 | ID | Prioridad | Descripción | Responsable (usuario / Codex / IT) | Cuándo se da por cerrado |
 |---|---|---|---|---|
-| P1 | Alta | Roles asignados a los usuarios en WAPI_ACCESS (aplicación /DCIU) | IT | Inicio de sesión funciona en http://localhost:8501 |
+| P1 | Alta | Cuenta de desarrollo del usuario en WAPI_ACCESS (aplicación /DCIU) con rol ADMINISTRADOR o USUARIO | IT | Inicio de sesión real funciona en http://localhost:8501 |
 
 ## Comandos para ejecutar y probar
 ```powershell
-Start-Process -FilePath .\.venv\Scripts\streamlit.exe -ArgumentList "run", "app.py"   # abre http://localhost:8501
-.\.venv\Scripts\python.exe -m pytest      # pruebas
+powershell -ExecutionPolicy Bypass -File .\herramientas\abrir_aplicacion.ps1   # abre http://localhost:8501 (otro puerto: -Puerto 8502)
+powershell -ExecutionPolicy Bypass -File .\herramientas\ejecutar_pruebas.ps1   # pruebas
 ```
 
 ## Historial breve
