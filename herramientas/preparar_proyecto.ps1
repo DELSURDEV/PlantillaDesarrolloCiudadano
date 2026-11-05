@@ -22,8 +22,8 @@ param(
 
 $ErrorActionPreference = "Stop"
 $utf8 = New-Object System.Text.UTF8Encoding $false
-# Carpeta persistente del RDP donde se guarda cada proyecto (E:\Data\<NOMBRE>).
-$CARPETA_PROYECTOS = "E:\Data"
+# Disco del RDP donde se guarda cada proyecto (E:\<USUARIO>\<NOMBRE>). "Data" es su etiqueta, no una carpeta.
+$DISCO_PROYECTOS = "E:\"
 $REPOSITORIO_PLANTILLA = "DELSURDEV/PlantillaDesarrolloCiudadano"
 function Paso([string]$texto) { Write-Host "==> $texto" -ForegroundColor Cyan }
 
@@ -55,10 +55,10 @@ function Leer-ConfiguracionGit([string]$carpeta) {
 }
 if ((Leer-ConfiguracionGit $raiz).IndexOf($REPOSITORIO_PLANTILLA, [StringComparison]::OrdinalIgnoreCase) -ge 0) {
     throw ("Esta carpeta está ligada al repositorio de la plantilla ($REPOSITORIO_PLANTILLA). " +
-        "No se hizo ningún cambio. Cree el proyecto con la descarga de AGENTS_ARRANQUE.md en $CARPETA_PROYECTOS.")
+        "No se hizo ningún cambio. Cree el proyecto con la descarga de AGENTS_ARRANQUE.md en $DISCO_PROYECTOS.")
 }
-if (-not $raiz.StartsWith($CARPETA_PROYECTOS + "\", [StringComparison]::OrdinalIgnoreCase)) {
-    Write-Warning "El proyecto no está en $CARPETA_PROYECTOS. En el RDP guarde cada proyecto en $CARPETA_PROYECTOS\<NOMBRE>."
+if ((Split-Path -Parent (Split-Path -Parent $raiz)) -ine $DISCO_PROYECTOS) {
+    Write-Warning "El proyecto no está en ${DISCO_PROYECTOS}<usuario>\<proyecto>. En el RDP guarde cada proyecto en esa ubicación."
 }
 
 # 2. CONTEXTO_PROYECTO.md (solo si aún tiene los marcadores de la plantilla)
@@ -116,7 +116,7 @@ Paso "Verificando la plantilla"
 & $pythonVenv (Join-Path $raiz "herramientas\verificar_plantilla.py")
 if ($LASTEXITCODE -ne 0) { throw "La base de seguridad de la plantilla fue modificada." }
 Paso "Corriendo las pruebas"
-# Mismo mecanismo que la ejecución manual: carpeta temporal propia, fuera del proyecto y de E:\Data.
+# Mismo mecanismo que la ejecución manual: carpeta temporal propia, fuera del proyecto y del disco E:.
 & (Join-Path $PSScriptRoot "ejecutar_pruebas.ps1") -q
 if ($LASTEXITCODE -ne 0) { throw "Hay pruebas que no pasan." }
 

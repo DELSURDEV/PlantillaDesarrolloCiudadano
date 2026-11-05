@@ -34,6 +34,16 @@ def test_ayudante(tmp_path):
     subprocess.run(["cmd", "/c", "mklink", "/J", str(tmp_path / "enlace"), destino], capture_output=True, check=True)
     assert os.environ["RESULTADO_ESPERADO"] == "pasa"
 '''
+DISCO_DEL_BLOQUE = '$disco = "E:\\"'
+# Reemplazan la descarga y la preparación: en PowerShell una función tiene prioridad sobre el comando.
+FALSOS_DE_DESCARGA = r'''
+function Invoke-WebRequest {
+    param([string]$Uri, [string]$OutFile, [switch]$UseBasicParsing)
+    Add-Content -LiteralPath $env:REGISTRO_DESCARGA "URL=$Uri"
+    Compress-Archive -Path $env:PLANTILLA_FALSA -DestinationPath $OutFile
+}
+function powershell { Add-Content -LiteralPath $env:REGISTRO_DESCARGA "PREPARAR=$args" }
+'''
 
 # Omisiones por falta de algo en el equipo ("no disponible") frente a la omisión intencional.
 requiere_powershell = pytest.mark.skipif(POWERSHELL is None, reason="no disponible en este equipo: Windows PowerShell")
@@ -210,7 +220,117 @@ def test_preparar_propaga_el_fallo_del_ejecutor_de_pruebas(tmp_path):
     assert resultado.returncode != 0, salida
     assert "No se permite --basetemp" in salida
     assert "Hay pruebas que no pasan" in salida
+    assert r"E:\<usuario>\<proyecto>" in salida  # la copia de prueba está fuera de la ubicación esperada
     assert not prohibida.exists()
+
+
+# --- Creación del proyecto (bloque de AGENTS_ARRANQUE.md) ---------------------------
+
+
+def _correr_bloque_de_descarga(tmp_path: Path, usuario: str, nombre: str, disco: Path | None = None):
+    """Corre el bloque real del arranque contra un disco simulado, sin red y sin preparar el entorno."""
+    if disco is None:
+        disco = tmp_path / "disco"
+        disco.mkdir(exist_ok=True)
+    plantilla = tmp_path / "PlantillaFalsa-0"
+    if not plantilla.exists():
+        plantilla.mkdir()
+        (plantilla / "archivo.txt").write_text("plantilla", encoding="utf-8")
+    texto = (RAIZ / "herramientas" / "AGENTS_ARRANQUE.md").read_text(encoding="utf-8")
+    encontrado = re.search(r'```powershell\n(\s*\$usuario = "<USUARIO>".*?)\n\s*```', texto, re.DOTALL)
+    assert encontrado, "No se encontró el bloque de descarga en AGENTS_ARRANQUE.md"
+    assert DISCO_DEL_BLOQUE in encontrado.group(1)
+    bloque = (
+        encontrado.group(1).replace("<USUARIO>", usuario).replace("<NOMBRE>", nombre)
+        .replace(DISCO_DEL_BLOQUE, f'$disco = "{disco}"')
+    )
+    script = tmp_path / "bloque.ps1"
+    script.write_text(FALSOS_DE_DESCARGA + bloque, encoding="utf-8-sig")
+    registro = tmp_path / "registro.txt"
+    entorno = {**os.environ, "REGISTRO_DESCARGA": str(registro), "PLANTILLA_FALSA": str(plantilla)}
+    resultado = subprocess.run(
+        [POWERSHELL, "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(script)],
+        capture_output=True, text=True, errors="replace", env=entorno, timeout=120, check=False,
+    )
+    return resultado, disco, registro
+
+
+@requiere_powershell
+def test_descarga_crea_el_proyecto_dentro_de_la_carpeta_del_usuario(tmp_path):
+    resultado, disco, registro = _correr_bloque_de_descarga(tmp_path, "kehernandez", "GTMP")
+
+    assert resultado.returncode == 0, resultado.stdout + resultado.stderr
+    proyecto = disco / "kehernandez" / "GTMP"
+    assert (proyecto / "archivo.txt").read_text(encoding="utf-8") == "plantilla"
+    assert [p.name for p in disco.iterdir()] == ["kehernandez"]
+    assert [p.name for p in (disco / "kehernandez").iterdir()] == ["GTMP"]  # sin restos temporales
+    version = (RAIZ / "VERSION").read_text(encoding="utf-8").strip()
+    lineas = registro.read_text(encoding="utf-8-sig").splitlines()
+    assert lineas[0].endswith(f"/archive/refs/tags/v{version}.zip"), lineas
+    assert str(proyecto / "herramientas" / "preparar_proyecto.ps1") in lineas[1], lineas
+
+
+@requiere_powershell
+def test_descarga_reutiliza_la_carpeta_del_usuario_sin_tocar_sus_proyectos(tmp_path):
+    _, disco, _ = _correr_bloque_de_descarga(tmp_path, "kehernandez", "GTMP")
+    trabajo = disco / "kehernandez" / "GTMP" / "trabajo.txt"
+    trabajo.write_text("avance", encoding="utf-8")
+
+    resultado, _, _ = _correr_bloque_de_descarga(tmp_path, "kehernandez", "OTRO")
+
+    assert resultado.returncode == 0, resultado.stdout + resultado.stderr
+    assert (disco / "kehernandez" / "OTRO" / "archivo.txt").exists()
+    assert trabajo.read_text(encoding="utf-8") == "avance"
+    assert sorted(p.name for p in (disco / "kehernandez").iterdir()) == ["GTMP", "OTRO"]
+
+
+@requiere_powershell
+def test_descarga_no_sobrescribe_un_proyecto_existente(tmp_path):
+    _, disco, registro = _correr_bloque_de_descarga(tmp_path, "kehernandez", "GTMP")
+    trabajo = disco / "kehernandez" / "GTMP" / "trabajo.txt"
+    trabajo.write_text("avance", encoding="utf-8")
+    lineas_antes = registro.read_text(encoding="utf-8-sig")
+
+    resultado, _, _ = _correr_bloque_de_descarga(tmp_path, "kehernandez", "GTMP")
+
+    assert resultado.returncode != 0
+    assert "Ya existe" in resultado.stdout + resultado.stderr
+    assert trabajo.read_text(encoding="utf-8") == "avance"
+    assert registro.read_text(encoding="utf-8-sig") == lineas_antes  # no descargó ni preparó de nuevo
+
+
+@requiere_powershell
+@pytest.mark.parametrize(
+    ("usuario", "nombre"),
+    [
+        (r"..\otro", "GTMP"),
+        ("ke hernandez", "GTMP"),
+        ("kehernandez.", "GTMP"),
+        ("CON", "GTMP"),
+        ("kehernandez", r"..\GTMP"),
+        ("kehernandez", "G T"),
+        ("kehernandez", "NUL"),
+    ],
+)
+def test_descarga_rechaza_nombres_no_validos_sin_crear_nada(tmp_path, usuario, nombre):
+    resultado, disco, registro = _correr_bloque_de_descarga(tmp_path, usuario, nombre)
+
+    assert resultado.returncode != 0
+    assert "no v" in resultado.stdout + resultado.stderr  # "no válido", con la tilde según la consola
+    assert list(disco.iterdir()) == []
+    assert not registro.exists()
+
+
+@requiere_powershell
+def test_descarga_avisa_si_no_existe_el_disco(tmp_path):
+    no_existe = tmp_path / "no-existe"
+
+    resultado, _, registro = _correr_bloque_de_descarga(tmp_path, "kehernandez", "GTMP", disco=no_existe)
+
+    assert resultado.returncode != 0
+    assert "No existe el disco" in resultado.stdout + resultado.stderr
+    assert not no_existe.exists()
+    assert not registro.exists()
 
 
 # --- Ejecución de pruebas ---------------------------------------------------------
@@ -250,15 +370,15 @@ def test_ejecutar_pruebas_propaga_el_fallo_y_conserva_la_carpeta(tmp_path):
 
 @requiere_powershell
 @requiere_entorno_del_proyecto
-@pytest.mark.parametrize("caso", ["proyecto", "e_data", "basetemp_unido", "basetemp_separado", "pytest_addopts"])
+@pytest.mark.parametrize("caso", ["proyecto", "disco_e", "basetemp_unido", "basetemp_separado", "pytest_addopts"])
 def test_ejecutar_pruebas_rechaza_carpetas_temporales_no_seguras(caso, tmp_path):
     entorno = dict(os.environ)
     argumentos = ["-q", "tests/test_integridad.py"]
     prohibida = tmp_path / "prohibida"
     if caso == "proyecto":
         entorno["LOCALAPPDATA"] = str(RAIZ)
-    elif caso == "e_data":
-        entorno["LOCALAPPDATA"] = r"E:\Data"
+    elif caso == "disco_e":
+        entorno["LOCALAPPDATA"] = r"E:\kehernandez"
     elif caso == "basetemp_unido":
         argumentos.append(f"--basetemp={prohibida}")
     elif caso == "basetemp_separado":

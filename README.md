@@ -3,7 +3,7 @@
 Base estable y controlada para aplicaciones de desarrollo ciudadano construidas con Codex.
 Estado: **pendiente de revisión y aprobación de IT**.
 
-Los usuarios **no trabajan sobre este repositorio**: Codex descarga el ZIP de una versión etiquetada siguiendo `herramientas/AGENTS_ARRANQUE.md` (solo archivos: sin historial ni remoto de Git) en `E:\Data\<NOMBRE>`, y `herramientas/preparar_proyecto.ps1` crea el entorno e instala. La preparación **nunca** borra ni modifica repositorios Git (propios o anidados) y se detiene sin cambios si la carpeta está ligada a este repositorio. Si después necesitan control de versiones, crean un repositorio propio, que se conserva aunque se vuelva a preparar el entorno.
+Los usuarios **no trabajan sobre este repositorio**: Codex descarga el ZIP de una versión etiquetada siguiendo `herramientas/AGENTS_ARRANQUE.md` (solo archivos: sin historial ni remoto de Git) en `E:\<USUARIO>\<NOMBRE>` (Codex propone el usuario de Windows y lo confirma; la carpeta del usuario se reutiliza si ya existe), y `herramientas/preparar_proyecto.ps1` crea el entorno e instala. La preparación **nunca** borra ni modifica repositorios Git (propios o anidados) y se detiene sin cambios si la carpeta está ligada a este repositorio. Si después necesitan control de versiones, crean un repositorio propio, que se conserva aunque se vuelva a preparar el entorno.
 
 Esta versión está destinada al **desarrollo y las pruebas internas**. La publicación y el acceso a datos o recursos internos son etapas futuras. La guía para usuarios es `GUIA_DESARROLLO_CIUDADANO.md`.
 
@@ -45,7 +45,7 @@ Esta versión está destinada al **desarrollo y las pruebas internas**. La publi
 | Integridad | `herramientas/verificar_plantilla.py` detecta cambios en la zona protegida |
 | Arranque | `herramientas/abrir_aplicacion.ps1` abre la app en 8501 o en el puerto indicado (`-Puerto`, vía `--server.port` y `--browser.serverPort`); si está ocupado, lo explica sin cerrar procesos |
 | Repositorios del usuario | `preparar_proyecto.ps1` solo lee `.git`; `tests/test_herramientas.py` comprueba que conserva historial, rama, remotos y configuración, también en repositorios anidados |
-| Pruebas | `herramientas/ejecutar_pruebas.ps1` (también lo usa `preparar_proyecto.ps1`): carpeta temporal única por ejecución en `%LOCALAPPDATA%\pytest-plantilla` vía `PYTEST_DEBUG_TEMPROOT` (restaurada al terminar), nunca en el proyecto ni en `E:\Data`; rechaza `--basetemp`; borra solo su carpeta si todo pasa; muestra el motivo de cada omisión |
+| Pruebas | `herramientas/ejecutar_pruebas.ps1` (también lo usa `preparar_proyecto.ps1`): carpeta temporal única por ejecución en `%LOCALAPPDATA%\pytest-plantilla` vía `PYTEST_DEBUG_TEMPROOT` (restaurada al terminar), nunca en el proyecto ni en el disco `E:`; rechaza `--basetemp`; borra solo su carpeta si todo pasa; muestra el motivo de cada omisión |
 | Marca DELSUR | Marco completo (menú lateral agrupado, ruta, pie institucional), tema, fuentes incluidas, logo oficial y componentes en `interfaz/`; pruebas que bloquean colores, CSS y emoji en las páginas |
 
 ## Estructura
@@ -99,8 +99,8 @@ powershell -ExecutionPolicy Bypass -File .\herramientas\ejecutar_pruebas.ps1    
 # actualizar VERSION y la versión (vX.Y.Z) en herramientas/AGENTS_ARRANQUE.md (2 lugares), en la guía rápida de AGENTS.md y en GUIA_DESARROLLO_CIUDADANO.md
 # si cambian dependencias: uv pip compile requirements.txt --python-platform x86_64-pc-windows-msvc --python-version 3.10 -o restricciones.txt
 git add -A                                         # incluye archivos nuevos (guía, scripts); revisar git status antes
-git commit -m "chore: versión 0.7.0"
-git tag v0.7.0; git push origin main --tags
+git commit -m "chore: versión 0.7.1"
+git tag v0.7.1; git push origin main --tags
 ```
 
 Después de publicar la etiqueta, comprobar que el ZIP de `archive/refs/tags/vX.Y.Z.zip` contiene `GUIA_DESARROLLO_CIUDADANO.md` y `VERSION` con la versión nueva, y que la URL raw de `AGENTS_ARRANQUE.md` de esa etiqueta responde.
@@ -122,10 +122,11 @@ El sistema de diseño DELSUR es la fuente oficial; esta plantilla es su traducci
 | Cambios de rol | Se aplican en el siguiente inicio de sesión (máximo 8 h). Para revocación inmediata, reiniciar la aplicación |
 | Varias instancias | La sesión vive en el proceso. Con más de una instancia, usar afinidad de sesión |
 | Acceso al repositorio | Hoy la descarga de la versión funciona sin autenticación. Alternativas: repositorio privado con lectura para los usuarios del RDP, o ZIP en carpeta compartida |
-| Arranque de Codex | Colocar `herramientas/AGENTS_ARRANQUE.md` como `E:\Data\AGENTS.md` |
+| Arranque de Codex | Colocar `herramientas/AGENTS_ARRANQUE.md` como `E:\AGENTS.md`. Confirmar que se puede escribir en la raíz del disco o colocarlo IT |
 | Python | Confirmar Python 3.10+ en el RDP; recomendado actualizar a una versión 3.10.x reciente (3.10.0 es de 2021) o 3.12 |
 | PowerShell | Permitir `-ExecutionPolicy Bypass` para `preparar_proyecto.ps1` o firmarlo |
 | Archivos públicos | `static/` se sirve sin inicio de sesión; solo contiene fuentes, logo y supergráfico (lo verifica una prueba) |
 | Íconos | Streamlit descarga los íconos Material desde fonts.gstatic.com; permitir ese dominio o aceptar íconos sin imagen |
-| Ruta de proyectos | `E:\Data\<NOMBRE>`. La carpeta `E:\Data` ya existe en el RDP; falta confirmar su persistencia, permisos y respaldo |
+| Ruta de proyectos | `E:\<USUARIO>\<NOMBRE>`. `E:` es el disco con etiqueta `Data`. Falta confirmar en el RDP la letra del disco, que un usuario normal pueda crear carpetas en la raíz, quién puede ver las carpetas de otros usuarios, la persistencia y el respaldo |
+| Proyectos creados con v0.7.0 | Su bloque de descarga exige una carpeta `E:\Data`, que no existe en el RDP. Usar v0.7.1 para crear proyectos. Un proyecto que ya esté en `E:\Data` conserva sus scripts y no se mueve automáticamente |
 | Proyectos creados con v0.6.2 | Su `preparar_proyecto.ps1` todavía borra `.git` al volver a ejecutarse. No crear un repositorio propio en esos proyectos hasta que el equipo dueño defina cómo actualizarlos (el script y el manifiesto son zona protegida) |

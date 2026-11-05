@@ -4,7 +4,7 @@
 
   - Crea una subcarpeta única por ejecución en %LOCALAPPDATA%\pytest-plantilla y se la indica a pytest
     con PYTEST_DEBUG_TEMPROOT, solo en este proceso; al terminar restaura el valor anterior.
-  - Nunca usa el proyecto ni E:\Data como carpeta temporal, y rechaza --basetemp (en argumentos,
+  - Nunca usa el proyecto ni el disco E: como carpeta temporal, y rechaza --basetemp (en argumentos,
     PYTEST_ADDOPTS o archivos de configuración de pytest), porque pytest vacía esa carpeta.
   - Si las pruebas pasan, borra solo su propia subcarpeta; si fallan, la conserva para revisarla.
   - Muestra el motivo de cada prueba omitida (-rs). Devuelve el código de salida de pytest.
@@ -17,7 +17,7 @@
 # Sin bloque param: los argumentos para pytest (por ejemplo -q) llegan completos en $args.
 
 $ErrorActionPreference = "Stop"
-$CARPETA_PROYECTOS = "E:\Data"
+$DISCO_PROYECTOS = "E:\"
 $VARIABLE_TEMPORAL = "PYTEST_DEBUG_TEMPROOT"
 $PATRON_EJECUCION = '^ejecucion-[0-9a-f]{8}$'
 $CODIGO_RECHAZO = 2
@@ -59,8 +59,8 @@ $local = $env:LOCALAPPDATA
 if ([string]::IsNullOrWhiteSpace($local)) { $local = [IO.Path]::GetTempPath() }
 # [IO.Path]::Combine no exige que la unidad exista (Join-Path sí), así se valida antes de crear nada.
 $base = [IO.Path]::GetFullPath([IO.Path]::Combine($local, "pytest-plantilla"))
-if ((Esta-Dentro $base $raiz) -or (Esta-Dentro $base $CARPETA_PROYECTOS)) {
-    Detener "La carpeta temporal $base queda dentro del proyecto o de $CARPETA_PROYECTOS. Revise LOCALAPPDATA con IT."
+if ((Esta-Dentro $base $raiz) -or (Esta-Dentro $base $DISCO_PROYECTOS)) {
+    Detener "La carpeta temporal $base queda dentro del proyecto o del disco $DISCO_PROYECTOS. Revise LOCALAPPDATA con IT."
 }
 
 New-Item -ItemType Directory -Force -Path $base | Out-Null
