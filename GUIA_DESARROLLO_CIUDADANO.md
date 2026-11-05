@@ -15,11 +15,11 @@ Los textos marcados como **[PENDIENTE: …]** son datos que esta guía no puede 
 
 ## Primeros pasos (recorrido corto)
 
-1. **Confirme con IT sus accesos** (sección B): el RDP, Codex, Python, la carpeta `E:\Data` y su cuenta de desarrollo en WAPI_ACCESS con rol `ADMINISTRADOR` o `USUARIO`.
+1. **Confirme con IT sus accesos** (sección B): el RDP, Codex, Python, el disco `E:` y su cuenta de desarrollo en WAPI_ACCESS con rol `ADMINISTRADOR` o `USUARIO`.
 2. **Prepare su idea** en una hoja: qué problema resuelve, quién la usa, qué datos maneja y qué reglas aplican (sección E).
-3. **Obtenga la plantilla:** abra Codex en `E:\Data` y escriba *"Quiero crear una aplicación nueva."* Codex pide un nombre, descarga la versión aprobada en `E:\Data\<nombre>` y la prepara (sección C).
+3. **Obtenga la plantilla:** abra Codex en `E:\` y escriba *"Quiero crear una aplicación nueva."* Codex le propone su usuario para que lo confirme, pide el nombre del proyecto, descarga la versión aprobada en `E:\<usuario>\<nombre>` y la prepara (sección C).
 4. **Compruebe que quedó lista:** al final debe aparecer en verde *"Proyecto '<nombre>' listo (plantilla v…, sin relación con su repositorio)."*
-5. **Abra Codex dentro de la carpeta del proyecto** (`E:\Data\<nombre>`) y escriba *"Lee AGENTS.md y CONTEXTO_PROYECTO.md y ayúdame a definir el proyecto."*
+5. **Abra Codex dentro de la carpeta del proyecto** (`E:\<usuario>\<nombre>`) y escriba *"Lee AGENTS.md y CONTEXTO_PROYECTO.md y ayúdame a definir el proyecto."*
 6. **Vea la aplicación:** escriba *"Abre la aplicación."* Se abre una ventana negra y el navegador en `http://localhost:8501`. Entre con su usuario y contraseña corporativos.
 7. **Construya por partes pequeñas** (sección F): describa una funcionalidad, revise la propuesta, deje que Codex la construya y pruébela.
 8. **Antes de irse** escriba *"Guarda el avance, voy a cerrar."* **Para retomar** otro día, escriba *"Lee AGENTS.md y CONTEXTO_PROYECTO.md, dime dónde quedamos y continúa."* (sección H).
@@ -110,7 +110,7 @@ No necesita decidir tecnología, estructura de archivos, seguridad ni diseño: l
 | Necesita | Para qué | Cómo comprobarlo |
 |---|---|---|
 | RDP con Windows y red corporativa | Trabajar y llegar a WAPI_ACCESS | Puede abrir el escritorio remoto. |
-| Carpeta `E:\Data` en el RDP | Guardar sus proyectos | Aparece en el Explorador de archivos. |
+| Disco `E:` en el RDP (su etiqueta es "Data") | Guardar sus proyectos | En el Explorador de archivos aparece como *Data (E:)*. |
 | Codex instalado y con acceso | El asistente que construye la aplicación | **[PENDIENTE IT: cómo se abre Codex en el RDP]** |
 | Python 3.10 o superior | Ejecutar la aplicación | El script de preparación lo busca solo. Si falta, muestra *"No se encontró Python 3.10 o superior. Pida a IT que lo instale."* |
 | Acceso a `github.com` y `raw.githubusercontent.com` | Descargar la plantilla | La descarga termina sin error. |
@@ -122,13 +122,15 @@ No se necesitan permisos de administrador ni Git.
 
 ### Dónde guardar su trabajo
 
-**Guarde cada proyecto en su propia carpeta dentro de `E:\Data`**, por ejemplo `E:\Data\revision-lecturas`. No use el escritorio, "Documentos", "Descargas" ni otras carpetas de `C:`.
+**Guarde cada proyecto en `E:\<usuario>\<proyecto>`**: una carpeta con su usuario y, dentro, una carpeta por proyecto. Por ejemplo, `E:\kehernandez\GTMP` y `E:\kehernandez\revision-lecturas`. `Data` es el nombre del disco, no una carpeta. No use el escritorio, "Documentos", "Descargas" ni otras carpetas de `C:`.
 
-La carpeta `E:\Data` ya existe en el RDP. Lo que todavía **no está comprobado** es que conserve los archivos después de cada limpieza o reinicio del RDP, quién más puede ver su contenido y si tiene respaldo. **[PENDIENTE IT: confirmar persistencia, permisos y respaldo de `E:\Data`]**
+La primera vez, Codex crea su carpeta de usuario. Los siguientes proyectos se crean dentro de esa misma carpeta, sin tocar los que ya tiene. Antes de crear nada, Codex le propone su usuario de Windows para que lo confirme. Es solo el nombre de la carpeta: nunca le pedirá su contraseña.
+
+Lo que todavía **no está comprobado** es que el disco conserve los archivos después de cada limpieza o reinicio del RDP, que un usuario normal pueda crear su carpeta en `E:\`, quién más puede ver su contenido y si tiene respaldo. Tener una carpeta propia no impide por sí solo que otros usuarios la vean. **[PENDIENTE IT: confirmar persistencia, permisos y respaldo del disco `E:`]**
 
 Para comprobar usted mismo que su carpeta se conserva:
 
-1. Después de crear el proyecto, abra el Explorador de archivos y entre a `E:\Data\<nombre>`.
+1. Después de crear el proyecto, abra el Explorador de archivos y entre a `E:\<usuario>\<nombre>`.
 2. Confirme que ve, entre otros, `AGENTS.md`, `CONTEXTO_PROYECTO.md`, `app.py` y la carpeta `.venv`.
 3. Cierre la sesión del RDP. Después de un reinicio o al día siguiente, vuelva a entrar a la misma carpeta.
 4. Resultado esperado: los archivos siguen ahí y `CONTEXTO_PROYECTO.md` tiene la fecha de su última actualización.
@@ -152,42 +154,43 @@ Para comprobar usted mismo que su carpeta se conserva:
 | Cuenta de desarrollo | Una cuenta por persona en WAPI_ACCESS, con rol `ADMINISTRADOR` o `USUARIO` en `/DCIU`. |
 | Cuentas para probar permisos | Para comprobar en pantalla que alguien con otro rol no ve lo que no debe, hace falta otra cuenta real con ese rol. |
 | Roles nuevos | Si su proyecto necesita un rol distinto de `ADMINISTRADOR` y `USUARIO`, IT debe crearlo en WAPI_ACCESS. |
-| Carpeta `E:\Data` | Confirmar que se conserva, quién tiene acceso y su respaldo. |
+| Disco `E:` | Confirmar que se conserva, que cada usuario puede crear su carpeta, quién tiene acceso y su respaldo. |
 | Herramientas | Python, Codex, acceso a GitHub y PyPI, y permiso para los scripts de PowerShell. |
 
 ---
 
 ## C. Cómo obtener y preparar la plantilla
 
-La plantilla se descarga como un archivo comprimido (ZIP) de una **versión aprobada** (por ejemplo `v0.7.0`) desde GitHub. Solo se copian los archivos: **no se trae el historial ni la conexión con el repositorio de la plantilla**. Así, nada de lo que usted haga puede enviarse por accidente a la plantilla. No necesita Git.
+La plantilla se descarga como un archivo comprimido (ZIP) de una **versión aprobada** (por ejemplo `v0.7.1`) desde GitHub. Solo se copian los archivos: **no se trae el historial ni la conexión con el repositorio de la plantilla**. Así, nada de lo que usted haga puede enviarse por accidente a la plantilla. No necesita Git.
 
-### Paso previo: archivo de arranque en `E:\Data`
+### Paso previo: archivo de arranque en `E:\`
 
-Codex necesita un archivo de instrucciones de arranque (`AGENTS.md`) en `E:\Data`. Si IT no lo dejó colocado:
+Codex necesita un archivo de instrucciones de arranque (`AGENTS.md`) en la raíz del disco, `E:\`. Si IT no lo dejó colocado:
 
 1. Abra PowerShell (menú Inicio → escriba *PowerShell*).
 2. Escriba y ejecute:
    ```powershell
-   cd "E:\Data"
-   Invoke-WebRequest "https://raw.githubusercontent.com/DELSURDEV/PlantillaDesarrolloCiudadano/v0.7.0/herramientas/AGENTS_ARRANQUE.md" -OutFile ".\AGENTS.md" -UseBasicParsing
+   cd "E:\"
+   Invoke-WebRequest "https://raw.githubusercontent.com/DELSURDEV/PlantillaDesarrolloCiudadano/v0.7.1/herramientas/AGENTS_ARRANQUE.md" -OutFile ".\AGENTS.md" -UseBasicParsing
    ```
-3. Resultado esperado: aparece `AGENTS.md` en `E:\Data`.
+3. Resultado esperado: aparece `AGENTS.md` en `E:\`. Si Windows no le permite guardarlo ahí, pida a IT que lo coloque.
 
 ### Camino 1: Codex crea el proyecto (recomendado)
 
-1. Abra Codex **en `E:\Data`**.
+1. Abra Codex **en `E:\`**.
 2. Escriba: *"Quiero crear una aplicación nueva."*
-3. Codex le pide solo el nombre del proyecto. Respóndalo (ejemplo: `revision-lecturas`).
-4. Codex descarga la versión aprobada en `E:\Data\<nombre>` y ejecuta la preparación. La primera vez tarda unos minutos.
-5. Si un paso falla, Codex debe mostrarle el mensaje y detenerse. No debe armar el proyecto a mano ni descargarlo por otro medio.
+3. Codex le propone su usuario de Windows: *"¿Tu usuario es kehernandez?"*. Confírmelo o escriba el correcto.
+4. Codex le pide el nombre del proyecto. Respóndalo (ejemplo: `GTMP`).
+5. Codex crea su carpeta de usuario si no existe, descarga la versión aprobada en `E:\<usuario>\<nombre>` y ejecuta la preparación. La primera vez tarda unos minutos.
+6. Si un paso falla, Codex debe mostrarle el mensaje y detenerse. No debe armar el proyecto a mano ni descargarlo por otro medio.
 
 ### Camino 2: descarga manual (si Codex no puede ejecutarla)
 
-1. Abra el archivo `E:\Data\AGENTS.md` con el Bloc de notas.
-2. Busque la sección **"Crear un proyecto nuevo"**, paso 2, y copie el bloque de comandos completo.
-3. Péguelo en PowerShell, cambie `<NOMBRE>` por el nombre del proyecto y presione Enter.
+1. Abra el archivo `E:\AGENTS.md` con el Bloc de notas.
+2. Busque la sección **"Crear un proyecto nuevo"**, paso 3, y copie el bloque de comandos completo.
+3. Péguelo en PowerShell, cambie `<USUARIO>` por su usuario y `<NOMBRE>` por el nombre del proyecto, y presione Enter.
 
-Es el mismo procedimiento que usa Codex: se detiene si la carpeta ya existe, no sobrescribe nada y no deja archivos temporales.
+Es el mismo procedimiento que usa Codex: reutiliza su carpeta de usuario, se detiene si el proyecto ya existe, no sobrescribe nada y no deja archivos temporales.
 
 ### Qué hace la preparación
 
@@ -209,7 +212,7 @@ Debe ver líneas que empiezan con `==>` y, al final:
 - Un resumen de pruebas con la palabra `passed` y sin `failed`.
 - En verde: `Proyecto '<nombre>' listo (plantilla v…, sin relación con su repositorio).`
 
-Si aparece la advertencia *"El proyecto no está en E:\Data"*, el proyecto quedó en otra ubicación: pida ayuda antes de seguir trabajando en él. Si aparece un mensaje en rojo, vea la sección I.
+Si aparece la advertencia *"El proyecto no está en E:\<usuario>\<proyecto>"*, el proyecto quedó en otra ubicación: pida ayuda antes de seguir trabajando en él. Si aparece un mensaje en rojo, vea la sección I.
 
 ### Dónde queda registrada la versión
 
@@ -419,7 +422,7 @@ Si su necesidad exige algo de esta lista, Codex debe explicarlo y registrarlo co
 
 ## G. Cómo ejecutar y probar
 
-Todo se hace **desde la carpeta del proyecto** (`E:\Data\<nombre>`). Lo más sencillo es pedírselo a Codex con las frases indicadas.
+Todo se hace **desde la carpeta del proyecto** (`E:\<usuario>\<nombre>`). Lo más sencillo es pedírselo a Codex con las frases indicadas.
 
 ### Abrir la aplicación
 
@@ -506,7 +509,7 @@ Resultado esperado: Codex confirma qué anotó y le da la frase para retomar. Lu
 
 ### Mensaje para retomar (en un chat nuevo)
 
-Abra Codex **en la carpeta del proyecto** (`E:\Data\<nombre>`) y escriba:
+Abra Codex **en la carpeta del proyecto** (`E:\<usuario>\<nombre>`) y escriba:
 
 ```text
 Lee AGENTS.md y CONTEXTO_PROYECTO.md, dime dónde quedamos y continúa.
@@ -524,11 +527,13 @@ Resultado esperado: Codex vuelve a preparar el entorno si se perdió (sin tocar 
 |---|---|---|
 | **Instalación:** *"No se encontró Python 3.10 o superior."* | Nada más que comprobar. | Siempre: IT debe instalar Python. |
 | **Instalación:** error de PowerShell sobre ejecución de scripts deshabilitada | Que el comando incluya `-ExecutionPolicy Bypass`. | Si persiste: IT debe permitirlo o firmar los scripts. |
-| **Descarga:** *"No existe E:\Data. Contacte a IT."* | Que está en el RDP correcto. | Siempre. |
-| **Descarga:** *"Ya existe la carpeta … Elija otro nombre."* / *"Nombre no válido"* | Usar otro nombre: letras, números, `-` o `_`, de 3 a 50 caracteres, sin espacios. | No aplica. |
+| **Descarga:** *"No existe el disco E:\. Contacte a IT."* | Que está en el RDP correcto. | Siempre. |
+| **Descarga:** *"Ya existe … Elija otro nombre de proyecto."* / *"Nombre no válido"* | Usar otro nombre: letras, números, `-` o `_`, de 3 a 50 caracteres, sin espacios. | No aplica. |
+| **Descarga:** *"Usuario no válido"* | Escribir su usuario sin espacios ni tildes; se permiten letras, números, `.`, `-` y `_`. | Si su usuario de Windows no cumple esa regla. |
+| **Descarga:** Windows no permite crear la carpeta en `E:\` | Que confirmó el usuario correcto. | Siempre: faltan permisos en el disco. |
 | **Descarga:** falla `Invoke-WebRequest` | Que el RDP tenga internet. | Si no hay acceso a GitHub. |
 | **Preparación:** *"Esta carpeta está ligada al repositorio de la plantilla…"* | No intente arreglarlo a mano. Cree el proyecto con la descarga de la sección C. | Si no sabe de dónde salió esa carpeta. |
-| **Preparación:** advertencia *"El proyecto no está en E:\Data"* | Dónde quedó la carpeta. | Para moverla de forma segura a `E:\Data`; Codex no mueve proyectos. |
+| **Preparación:** advertencia *"El proyecto no está en E:\<usuario>\<proyecto>"* | Dónde quedó la carpeta. | Para moverla de forma segura; Codex no mueve proyectos. |
 | **Dependencias:** *"No se pudieron instalar las librerías. Revise la conexión a PyPI o el proxy con IT."* | Volver a intentar una vez. | Si se repite: acceso a PyPI o proxy. |
 | **Dependencias:** entorno dañado tras cambiar Python | Pedir a Codex que prepare el entorno con la opción de reinstalar. | Si sigue fallando. |
 | **Integridad:** *"La base de seguridad de la plantilla fue modificada."* | Pedir a Codex qué archivos lista y que no los vuelva a tocar. | Para restaurarlos, o si el cambio era necesario (lo decide el equipo dueño). |
@@ -546,7 +551,7 @@ Resultado esperado: Codex vuelve a preparar el entorno si se perdió (sin tocar 
 | **Sesión:** *"Su sesión venció."* o pide iniciar sesión al recargar | Es normal: 30 minutos sin actividad, 8 horas de sesión o recarga de página. | No aplica. |
 | **Datos:** la información capturada desapareció | Es lo esperado al recargar, cerrar la pestaña o la aplicación: no hay almacenamiento permanente en esta etapa. | No aplica; regístrelo como necesidad en `CONTEXTO_PROYECTO.md`. |
 | **Funcionamiento:** la pantalla no hace lo que se pidió | Reportarlo con el mensaje de "Reportar un error" (sección F). | Si el error está en el inicio de sesión. |
-| **Archivos:** desapareció la carpeta del proyecto o el contexto volvió atrás | Revisar que busca en `E:\Data`. | Siempre: la ubicación no está conservando los archivos. |
+| **Archivos:** desapareció la carpeta del proyecto o el contexto volvió atrás | Revisar que busca en `E:\<usuario>`. | Siempre: la ubicación no está conservando los archivos. |
 
 ### Qué información compartir (y cuál no)
 
@@ -554,7 +559,7 @@ Comparta:
 
 - El texto exacto del mensaje de error.
 - Los pasos que hizo, el resultado esperado y el observado.
-- El nombre del proyecto, su ruta en `E:\Data` y la versión de la plantilla (`VERSION`).
+- El nombre del proyecto, su ruta en `E:\` y la versión de la plantilla (`VERSION`).
 - La hora aproximada del problema.
 - Capturas de pantalla, revisando que no muestren datos personales de otras personas.
 
@@ -615,13 +620,14 @@ Si comparte la carpeta del proyecto, no incluya `.venv` (se vuelve a crear).
 |---|---|---|---|
 | Describir problema, usuarios, datos y reglas | Sí | Pregunta y resume | — |
 | Aprobar alcance y criterios | Sí | Propone | — |
-| Descargar y preparar la plantilla en `E:\Data` | Pide | Ejecuta | Da acceso a GitHub, PyPI y Python |
+| Confirmar su usuario para la carpeta en `E:\` | Sí | Lo propone | — |
+| Descargar y preparar la plantilla en `E:\<usuario>\<nombre>` | Pide | Ejecuta | Da acceso a GitHub, PyPI y Python |
 | Construir pantallas, reglas y pruebas | Revisa | Sí | — |
 | Asignar permisos a `ADMINISTRADOR` y `USUARIO` | Decide | Lo registra en `config/permisos.toml` | — |
 | Crear cuentas de desarrollo y roles nuevos en WAPI_ACCESS | Solicita | Lista los necesarios | IT |
 | Probar con cuentas reales | Sí | Anota resultados | Entrega las cuentas |
 | Mantener `CONTEXTO_PROYECTO.md` | Revisa | Sí | — |
-| Confirmar persistencia y respaldo de `E:\Data` | Comprueba en su carpeta | — | IT |
+| Confirmar persistencia y respaldo del disco `E:` | Comprueba en su carpeta | — | IT |
 | Habilitar datos u otros sistemas internos | Expresa la necesidad | Registra el pendiente | Etapa futura |
 | Cambiar seguridad, diseño o tiempos de sesión | Solicita | No lo hace | Equipo dueño |
 | Publicar para otros usuarios | — | — | Etapa futura |

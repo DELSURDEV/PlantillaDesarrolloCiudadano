@@ -10,15 +10,15 @@ Codex: si el usuario pregunta cómo empezar, cómo abrir la aplicación o cómo 
 
 | Quiero… | Qué hacer |
 |---|---|
-| Empezar a trabajar o retomar | Abrir Codex **en la carpeta del proyecto** (`E:\Data\<NOMBRE>`) y escribir: *"Lee AGENTS.md y CONTEXTO_PROYECTO.md, dime dónde quedamos y continúa."* |
+| Empezar a trabajar o retomar | Abrir Codex **en la carpeta del proyecto** (`E:\<USUARIO>\<NOMBRE>`) y escribir: *"Lee AGENTS.md y CONTEXTO_PROYECTO.md, dime dónde quedamos y continúa."* |
 | Ver la aplicación | Escribir a Codex: *"Abre la aplicación."* Se abre en `http://localhost:8501` y pide usuario y contraseña corporativos. |
 | Abrirla en otro puerto | Si el 8501 está ocupado, escribir a Codex: *"Abre la aplicación en el puerto 8502."* |
 | Ver un cambio que hizo Codex | Se aplica solo en unos segundos. Si no aparece, recargar (F5) y volver a iniciar sesión. |
 | Detener la aplicación | Cerrar la ventana negra de la aplicación. |
 | Terminar la sesión de trabajo | Escribir a Codex: *"Guarda el avance, voy a cerrar."* |
-| Crear otro proyecto o no tengo la plantilla | En `E:\Data`, descargar el AGENTS de arranque y pedir a Codex *"Quiero crear una aplicación nueva."*: `cd "E:\Data"; Invoke-WebRequest "https://raw.githubusercontent.com/DELSURDEV/PlantillaDesarrolloCiudadano/v0.7.0/herramientas/AGENTS_ARRANQUE.md" -OutFile ".\AGENTS.md" -UseBasicParsing` |
+| Crear otro proyecto o no tengo la plantilla | En `E:\`, descargar el AGENTS de arranque y pedir a Codex *"Quiero crear una aplicación nueva."*: `cd "E:\"; Invoke-WebRequest "https://raw.githubusercontent.com/DELSURDEV/PlantillaDesarrolloCiudadano/v0.7.1/herramientas/AGENTS_ARRANQUE.md" -OutFile ".\AGENTS.md" -UseBasicParsing` |
 
-- Los proyectos se guardan en `E:\Data\<NOMBRE>`, una carpeta por proyecto.
+- Los proyectos se guardan en `E:\<USUARIO>\<NOMBRE>`: una carpeta por usuario y, dentro, una por proyecto. `E:` es el disco con etiqueta "Data"; `Data` no es una carpeta.
 - El chat **no se guarda** entre sesiones. Todo el avance queda en `CONTEXTO_PROYECTO.md`, y Codex lo actualiza después de cada tarea.
 - El inicio de sesión usa la WAPI_ACCESS corporativa con la aplicación `/DCIU`; ya viene configurado y no hay que cambiar nada. Las contraseñas **nunca** se escriben en el chat ni en archivos.
 - Por seguridad, la sesión vive en la pestaña del navegador: recargar la página o abrir otra pestaña pide iniciar sesión de nuevo.
@@ -30,7 +30,7 @@ Codex: si el usuario pregunta cómo empezar, cómo abrir la aplicación o cómo 
 - Nunca pidas, escribas ni guardes contraseñas, secretos o tokens: ni en el chat, ni en el código, ni en archivos de configuración.
 - No inventes datos de IT (roles, servidores, bases de datos). La dirección de WAPI_ACCESS y el código `/DCIU` son fijos de la plantilla: no los cambies ni los copies en otros archivos. Si faltan, regístralos como pendiente en `CONTEXTO_PROYECTO.md`.
 - Este proyecto es una copia desligada de la plantilla. No lo conectes al repositorio de la plantilla. Si el usuario quiere Git, usa un repositorio nuevo y propio.
-- Nunca borres `.git`, cambies remotos ni reinicies un repositorio existente (tampoco los anidados). No muevas ni borres proyectos de `E:\Data`.
+- Nunca borres `.git`, cambies remotos ni reinicies un repositorio existente (tampoco los anidados). No muevas ni borres proyectos de `E:\`.
 
 ## 2. Preparación del entorno (al iniciar cada sesión)
 
@@ -245,6 +245,6 @@ powershell -ExecutionPolicy Bypass -File .\herramientas\abrir_aplicacion.ps1    
 powershell -ExecutionPolicy Bypass -File .\herramientas\abrir_aplicacion.ps1 -Puerto 8502    # en otro puerto
 ```
 
-Para las pruebas usa siempre `ejecutar_pruebas.ps1` (acepta argumentos de pytest, por ejemplo `-q tests\test_facturas.py`): crea una carpeta temporal propia en `%LOCALAPPDATA%\pytest-plantilla`, fuera del proyecto y de `E:\Data`. No uses `--basetemp` ni configures `PYTEST_DEBUG_TEMPROOT` a mano.
+Para las pruebas usa siempre `ejecutar_pruebas.ps1` (acepta argumentos de pytest, por ejemplo `-q tests\test_facturas.py`): crea una carpeta temporal propia en `%LOCALAPPDATA%\pytest-plantilla`, fuera del proyecto y del disco `E:`. No uses `--basetemp` ni configures `PYTEST_DEBUG_TEMPROOT` a mano.
 
 Para abrir la aplicación usa siempre `abrir_aplicacion.ps1`: la abre en una ventana aparte, espera a que responda y abre el navegador en la dirección efectiva; tu sesión no queda bloqueada. No ejecutes `streamlit run` directamente en tu terminal ni cambies el puerto en `.streamlit/config.toml`. Si el script indica que el puerto está ocupado, **no cierres procesos**: pregunta al usuario si es su aplicación (en ese caso, que recargue el navegador) o si prefiere abrirla en el puerto que sugiere el mensaje.
